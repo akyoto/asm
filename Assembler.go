@@ -7,10 +7,13 @@ import (
 
 type Assembler struct {
 	bytes.Buffer
+	strings *stringTable
 }
 
 func New() *Assembler {
-	return &Assembler{}
+	return &Assembler{
+		strings: newStringTable(),
+	}
 }
 
 func (a *Assembler) WriteBytes(someBytes ...byte) {
@@ -41,7 +44,7 @@ func (a *Assembler) Syscall() {
 func (a *Assembler) Print(msg string) {
 	a.Mov("rax", int32(1))
 	a.Mov("rdi", int32(1))
-	a.Mov("rsi", EmbedString(msg))
+	a.Mov("rsi", a.strings.Add(msg))
 	a.Mov("rdx", int32(len(msg)))
 	a.Syscall()
 }
