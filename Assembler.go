@@ -23,17 +23,18 @@ func (a *Assembler) WriteBytes(someBytes ...byte) {
 }
 
 func (a *Assembler) Mov(registerName string, num interface{}) {
-	switch registerName {
-	case "rax":
-		a.WriteByte(0xb8)
-	case "rdi":
-		a.WriteByte(0xbf)
-	case "rsi":
-		a.WriteBytes(0x48, 0xbe)
-	case "rdx":
-		a.WriteByte(0xba)
+	baseCode := byte(0xb8)
+	registerID, exists := registerIDs[registerName]
+
+	if !exists {
+		panic("Unknown register name: " + registerName)
 	}
 
+	if registerName == "rsi" {
+		a.WriteByte(REX(1, 0, 0, 0))
+	}
+
+	a.WriteByte(baseCode + registerID)
 	_ = binary.Write(a, binary.LittleEndian, num)
 }
 
@@ -44,6 +45,7 @@ func (a *Assembler) Syscall() {
 func (a *Assembler) Print(msg string) {
 	a.Mov("rax", int32(1))
 	a.Mov("rdi", int32(1))
+	a.Len()
 	a.Mov("rsi", a.strings.Add(msg))
 	a.Mov("rdx", int32(len(msg)))
 	a.Syscall()
