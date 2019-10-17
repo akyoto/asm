@@ -45,7 +45,6 @@ func (a *Assembler) Syscall() {
 func (a *Assembler) Print(msg string) {
 	a.Mov("rax", int32(1))
 	a.Mov("rdi", int32(1))
-	a.Len()
 	a.Mov("rsi", a.strings.Add(msg))
 	a.Mov("rdx", int32(len(msg)))
 	a.Syscall()
