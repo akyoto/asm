@@ -30,7 +30,8 @@ func (a *Assembler) Mov(registerName string, num interface{}) {
 		panic("Unknown register name: " + registerName)
 	}
 
-	if registerName == "rsi" {
+	switch num.(type) {
+	case int64:
 		a.WriteByte(REX(1, 0, 0, 0))
 	}
 

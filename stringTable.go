@@ -10,7 +10,7 @@ type stringTable struct {
 
 func newStringTable() *stringTable {
 	return &stringTable{
-		virtualOffset: 0x400000 + 0xee,
+		virtualOffset: 0x400000 + 0xf0,
 		addresses:     make(map[string]int64),
 	}
 }

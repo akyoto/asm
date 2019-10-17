@@ -128,7 +128,7 @@ func New(instructions []byte) *ELF64 {
 	entryPointInFile := endOfHeaders
 
 	// Padding for instructions
-	padding := entryPointInFile % programAlign
+	padding := programAlign - (entryPointInFile % programAlign)
 	entryPointInFile += padding
 	program.InstructionsPadding = bytes.Repeat([]byte{0}, int(padding))
 	program.EntryPointInMemory = address + entryPointInFile
@@ -138,7 +138,7 @@ func New(instructions []byte) *ELF64 {
 
 	// Padding for sections
 	endOfInstructions := entryPointInFile + int64(len(instructions))
-	padding = endOfInstructions % sectionAlign
+	padding = sectionAlign - (endOfInstructions % sectionAlign)
 	endOfInstructions += padding
 	program.SectionsPadding = bytes.Repeat([]byte{0}, int(padding))
 	program.SectionHeaders[0].Offset = endOfInstructions
