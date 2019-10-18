@@ -63,6 +63,10 @@ func (a *Assembler) Syscall() {
 	a.WriteBytes(0x0f, 0x05)
 }
 
+func (a *Assembler) Println(msg string) {
+	a.Print(msg + "\n")
+}
+
 func (a *Assembler) Print(msg string) {
 	a.Mov("rax", int32(1))
 	a.Mov("rdi", int32(1))

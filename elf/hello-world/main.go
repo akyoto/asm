@@ -9,8 +9,8 @@ import (
 
 func main() {
 	a := asm.New()
-	a.Print("Hello World\n")
-	a.Print("Nice day, isn't it?\n")
+	a.Println("Hello World")
+	a.Println("Nice day, isn't it?")
 	a.Exit(0)
 
 	program := elf.New(a.Bytes(), a.StringTable, a.SectionPointers)
