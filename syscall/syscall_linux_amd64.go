@@ -337,4 +337,7 @@ var Registers = []string{
 	"rdi",
 	"rsi",
 	"rdx",
+	"r10",
+	"r8",
+	"r9",
 }

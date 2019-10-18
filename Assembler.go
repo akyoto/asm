@@ -40,7 +40,7 @@ func (a *Assembler) WriteBytes(someBytes ...byte) {
 
 func (a *Assembler) Mov(registerName string, num interface{}) {
 	baseCode := byte(0xb8)
-	registerID, exists := registerIDs[registerName]
+	register, exists := registers[registerName]
 
 	if !exists {
 		panic("Unknown register name: " + registerName)
@@ -51,7 +51,7 @@ func (a *Assembler) Mov(registerName string, num interface{}) {
 		a.WriteByte(REX(1, 0, 0, 0))
 	}
 
-	a.WriteByte(baseCode + registerID)
+	a.WriteByte(baseCode + register.BaseCodeOffset)
 
 	switch v := num.(type) {
 	case string:
@@ -75,6 +75,10 @@ func (a *Assembler) Println(msg string) {
 
 func (a *Assembler) Print(msg string) {
 	a.Syscall(syscall.Write, int32(1), msg, int32(len(msg)))
+}
+
+func (a *Assembler) Open(fileName string) {
+	a.Syscall(syscall.Open, fileName, int32(0666))
 }
 
 func (a *Assembler) Exit(code int32) {
