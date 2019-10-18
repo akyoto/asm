@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 
 	"github.com/akyoto/asm/stringtable"
+	"github.com/akyoto/asm/syscall"
 )
 
 type Assembler struct {
@@ -59,7 +60,11 @@ func (a *Assembler) Mov(registerName string, num interface{}) {
 	}
 }
 
-func (a *Assembler) Syscall() {
+func (a *Assembler) Syscall(parameters ...interface{}) {
+	for count, parameter := range parameters {
+		a.Mov(syscall.Registers[count], parameter)
+	}
+
 	a.WriteBytes(0x0f, 0x05)
 }
 
@@ -68,15 +73,9 @@ func (a *Assembler) Println(msg string) {
 }
 
 func (a *Assembler) Print(msg string) {
-	a.Mov("rax", int32(1))
-	a.Mov("rdi", int32(1))
-	a.Mov("rsi", msg)
-	a.Mov("rdx", int32(len(msg)))
-	a.Syscall()
+	a.Syscall(syscall.Write, int32(1), msg, int32(len(msg)))
 }
 
 func (a *Assembler) Exit(code int32) {
-	a.Mov("rax", int32(60))
-	a.Mov("rdi", code)
-	a.Syscall()
+	a.Syscall(syscall.Exit, code)
 }
