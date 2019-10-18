@@ -26,6 +26,7 @@ func (table *StringTable) Add(text string) int64 {
 	position = int64(table.raw.Len())
 	table.addresses[text] = position
 	table.raw.WriteString(text)
+	table.raw.WriteByte(0)
 	return position
 }
 
