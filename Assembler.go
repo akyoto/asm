@@ -3,17 +3,31 @@ package asm
 import (
 	"bytes"
 	"encoding/binary"
+
+	"github.com/akyoto/asm/stringtable"
 )
 
 type Assembler struct {
 	bytes.Buffer
-	strings *stringTable
+	StringTable     *stringtable.StringTable
+	SectionPointers []Pointer
 }
 
 func New() *Assembler {
 	return &Assembler{
-		strings: newStringTable(),
+		StringTable: stringtable.New(),
 	}
+}
+
+func (a *Assembler) AddString(msg string) int64 {
+	address := a.StringTable.Add(msg)
+
+	a.SectionPointers = append(a.SectionPointers, Pointer{
+		Address:  address,
+		Position: a.Len(),
+	})
+
+	return address
 }
 
 func (a *Assembler) WriteBytes(someBytes ...byte) {
@@ -31,12 +45,18 @@ func (a *Assembler) Mov(registerName string, num interface{}) {
 	}
 
 	switch num.(type) {
-	case int64:
+	case string, int64:
 		a.WriteByte(REX(1, 0, 0, 0))
 	}
 
 	a.WriteByte(baseCode + registerID)
-	_ = binary.Write(a, binary.LittleEndian, num)
+
+	switch v := num.(type) {
+	case string:
+		_ = binary.Write(a, binary.LittleEndian, a.AddString(v))
+	default:
+		_ = binary.Write(a, binary.LittleEndian, num)
+	}
 }
 
 func (a *Assembler) Syscall() {
@@ -46,7 +66,7 @@ func (a *Assembler) Syscall() {
 func (a *Assembler) Print(msg string) {
 	a.Mov("rax", int32(1))
 	a.Mov("rdi", int32(1))
-	a.Mov("rsi", a.strings.Add(msg))
+	a.Mov("rsi", msg)
 	a.Mov("rdx", int32(len(msg)))
 	a.Syscall()
 }

@@ -10,9 +10,10 @@ import (
 func main() {
 	a := asm.New()
 	a.Print("Hello World\n")
+	a.Print("Nice day, isn't it?\n")
 	a.Exit(0)
 
-	program := elf.New(a.Bytes())
+	program := elf.New(a.Bytes(), a.StringTable, a.SectionPointers)
 	err := program.WriteToFile("hello")
 
 	if err != nil {

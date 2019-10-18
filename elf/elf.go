@@ -5,6 +5,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"os"
+
+	"github.com/akyoto/asm"
+	"github.com/akyoto/asm/stringtable"
 )
 
 const (
@@ -75,13 +78,14 @@ type SectionHeader64 struct {
 }
 
 // New creates a new 64-bit ELF binary.
-func New(instructions []byte) *ELF64 {
+func New(instructions []byte, strings *stringtable.StringTable, sectionPointers []asm.Pointer) *ELF64 {
 	const (
 		address      = 0x400000
 		programAlign = 16
 		sectionAlign = 16
 	)
 
+	sectionData := strings.Bytes()
 	program := &ELF64{
 		Header64: Header64{
 			Magic:                  [4]byte{0x7F, 'E', 'L', 'F'},
@@ -112,12 +116,12 @@ func New(instructions []byte) *ELF64 {
 				NameOffset:      0,
 				Type:            1,
 				Flags:           2,
-				SizeInFileImage: int64(len("Hello World\n")),
+				SizeInFileImage: int64(len(sectionData)),
 				Align:           sectionAlign,
 			},
 		},
 		Instructions: instructions,
-		Sections:     []byte("Hello World\n"),
+		Sections:     sectionData,
 	}
 
 	// Entry point
@@ -142,10 +146,15 @@ func New(instructions []byte) *ELF64 {
 	endOfInstructions += padding
 	program.SectionsPadding = bytes.Repeat([]byte{0}, int(padding))
 	program.SectionHeaders[0].Offset = endOfInstructions
-	program.SectionHeaders[0].VirtualAddress = address + (endOfInstructions - entryPointInFile)
+	program.SectionHeaders[0].VirtualAddress = address + endOfInstructions
 
 	if program.SectionHeaderEntryCount == 0 {
 		program.SectionHeaderOffset = 0
+	}
+
+	// Apply offsets to all section addresses
+	for _, pointer := range sectionPointers {
+		binary.LittleEndian.PutUint64(instructions[pointer.Position:pointer.Position+8], uint64(address+endOfInstructions+pointer.Address))
 	}
 
 	return program
