@@ -6,12 +6,13 @@ import (
 
 	"github.com/akyoto/asm/stringtable"
 	"github.com/akyoto/asm/syscall"
+	"github.com/akyoto/asm/utils"
 )
 
 type Assembler struct {
 	bytes.Buffer
 	StringTable     *stringtable.StringTable
-	SectionPointers []Pointer
+	SectionPointers []utils.Pointer
 }
 
 func New() *Assembler {
@@ -23,7 +24,7 @@ func New() *Assembler {
 func (a *Assembler) AddString(msg string) int64 {
 	address := a.StringTable.Add(msg)
 
-	a.SectionPointers = append(a.SectionPointers, Pointer{
+	a.SectionPointers = append(a.SectionPointers, utils.Pointer{
 		Address:  address,
 		Position: a.Len(),
 	})

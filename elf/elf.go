@@ -6,8 +6,8 @@ import (
 	"encoding/binary"
 	"os"
 
-	"github.com/akyoto/asm"
 	"github.com/akyoto/asm/stringtable"
+	"github.com/akyoto/asm/utils"
 )
 
 const (
@@ -78,7 +78,7 @@ type SectionHeader64 struct {
 }
 
 // New creates a new 64-bit ELF binary.
-func New(instructions []byte, strings *stringtable.StringTable, sectionPointers []asm.Pointer) *ELF64 {
+func New(instructions []byte, strings *stringtable.StringTable, sectionPointers []utils.Pointer) *ELF64 {
 	const (
 		address      = 0x400000
 		programAlign = 16
