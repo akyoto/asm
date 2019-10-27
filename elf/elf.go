@@ -44,12 +44,15 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []utils.
 	elf.AddProgram(instructions, ProgramTypeLOAD, ProgramFlagsExecutable|ProgramFlagsReadable)
 	elf.AddSection(strings.Bytes(), SectionTypePROGBITS, SectionFlagsAllocate)
 
-	// Entry point
+	// Header count
 	elf.ProgramHeaderEntryCount = int16(len(elf.Programs))
 	elf.SectionHeaderEntryCount = int16(len(elf.Sections))
-	elf.SectionHeaderOffset = elf.ProgramHeaderOffset + int64(elf.ProgramHeaderEntryCount)*int64(elf.ProgramHeaderEntrySize)
-	endOfHeaders := elf.SectionHeaderOffset + int64(elf.SectionHeaderEntryCount)*int64(elf.SectionHeaderEntrySize)
-	entryPointInFile := endOfHeaders
+
+	// Entry point
+	endOfProgramHeaders := elf.ProgramHeaderOffset + int64(elf.ProgramHeaderEntryCount)*int64(elf.ProgramHeaderEntrySize)
+	elf.SectionHeaderOffset = endOfProgramHeaders
+	endOfSectionHeaders := elf.SectionHeaderOffset + int64(elf.SectionHeaderEntryCount)*int64(elf.SectionHeaderEntrySize)
+	entryPointInFile := endOfSectionHeaders
 
 	// Padding for instructions
 	padding := calculatePadding(entryPointInFile, programAlign)
