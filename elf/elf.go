@@ -19,12 +19,8 @@ const (
 // ELF64 represents an ELF 64-bit file.
 type ELF64 struct {
 	Header64
-	ProgramHeaders      []ProgramHeader64
-	SectionHeaders      []SectionHeader64
-	InstructionsPadding []byte
-	Instructions        []byte
-	SectionsPadding     []byte
-	Sections            []byte
+	Programs []*Program
+	Sections []*Section
 }
 
 // New creates a new 64-bit ELF binary.
@@ -43,46 +39,34 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []utils.
 			SectionHeaderEntrySize: SectionHeader64Size,
 			ProgramHeaderOffset:    Header64Size,
 		},
-		ProgramHeaders: []ProgramHeader64{
-			ProgramHeader64{
-				Type:            1,     // Loadable segment
-				Flags:           4 + 1, // Readable & Executable
-				VirtualAddress:  address,
-				PhysicalAddress: address,
-				SizeInFileImage: int64(len(instructions)),
-				SizeInMemory:    int64(len(instructions)),
-				Align:           programAlign,
-			},
-		},
-		SectionHeaders: []SectionHeader64{},
-		Instructions:   instructions,
 	}
 
-	elf.AddSection(strings.Bytes())
+	elf.AddProgram(instructions, ProgramTypeLOAD, ProgramFlagsExecutable|ProgramFlagsReadable)
+	elf.AddSection(strings.Bytes(), SectionTypePROGBITS, SectionFlagsAllocate)
 
 	// Entry point
-	elf.ProgramHeaderEntryCount = int16(len(elf.ProgramHeaders))
-	elf.SectionHeaderEntryCount = int16(len(elf.SectionHeaders))
+	elf.ProgramHeaderEntryCount = int16(len(elf.Programs))
+	elf.SectionHeaderEntryCount = int16(len(elf.Sections))
 	elf.SectionHeaderOffset = elf.ProgramHeaderOffset + int64(elf.ProgramHeaderEntryCount)*int64(elf.ProgramHeaderEntrySize)
 	endOfHeaders := elf.SectionHeaderOffset + int64(elf.SectionHeaderEntryCount)*int64(elf.SectionHeaderEntrySize)
 	entryPointInFile := endOfHeaders
 
 	// Padding for instructions
-	padding := programAlign - (entryPointInFile % programAlign)
+	padding := calculatePadding(entryPointInFile, programAlign)
 	entryPointInFile += padding
-	elf.InstructionsPadding = bytes.Repeat([]byte{0}, int(padding))
+	elf.Programs[0].Padding = bytes.Repeat([]byte{0}, int(padding))
 	elf.EntryPointInMemory = address + entryPointInFile
-	elf.ProgramHeaders[0].Offset = entryPointInFile
-	elf.ProgramHeaders[0].VirtualAddress = elf.EntryPointInMemory
-	elf.ProgramHeaders[0].PhysicalAddress = elf.EntryPointInMemory
+	elf.Programs[0].Header.Offset = entryPointInFile
+	elf.Programs[0].Header.VirtualAddress = elf.EntryPointInMemory
+	elf.Programs[0].Header.PhysicalAddress = elf.EntryPointInMemory
 
 	// Padding for sections
 	endOfInstructions := entryPointInFile + int64(len(instructions))
-	padding = sectionAlign - (endOfInstructions % sectionAlign)
+	padding = calculatePadding(endOfInstructions, sectionAlign)
 	endOfInstructions += padding
-	elf.SectionsPadding = bytes.Repeat([]byte{0}, int(padding))
-	elf.SectionHeaders[0].Offset = endOfInstructions
-	elf.SectionHeaders[0].VirtualAddress = address + endOfInstructions
+	elf.Sections[0].Padding = bytes.Repeat([]byte{0}, int(padding))
+	elf.Sections[0].Header.Offset = endOfInstructions
+	elf.Sections[0].Header.VirtualAddress = address + endOfInstructions
 
 	if elf.SectionHeaderEntryCount == 0 {
 		elf.SectionHeaderOffset = 0
@@ -90,23 +74,42 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []utils.
 
 	// Apply offsets to all string addresses
 	for _, pointer := range stringPointers {
-		binary.LittleEndian.PutUint64(instructions[pointer.Position:pointer.Position+8], uint64(address+endOfInstructions+pointer.Address))
+		oldAddress := instructions[pointer.Position : pointer.Position+8]
+		newAddress := uint64(address + endOfInstructions + pointer.Address)
+		binary.LittleEndian.PutUint64(oldAddress, newAddress)
 	}
 
 	return elf
 }
 
-// AddSection adds a section to the ELF file.
-func (elf *ELF64) AddSection(data []byte) {
-	elf.SectionHeaders = append(elf.SectionHeaders, SectionHeader64{
-		NameOffset:      0,
-		Type:            1,
-		Flags:           2,
-		SizeInFileImage: int64(len(data)),
-		Align:           sectionAlign,
+// AddProgram adds a section to the ELF file.
+func (elf *ELF64) AddProgram(data []byte, typ ProgramType, flags ProgramFlags) {
+	elf.Programs = append(elf.Programs, &Program{
+		Header: ProgramHeader64{
+			Type:            typ,
+			Flags:           flags,
+			VirtualAddress:  address,
+			PhysicalAddress: address,
+			SizeInFileImage: int64(len(data)),
+			SizeInMemory:    int64(len(data)),
+			Align:           programAlign,
+		},
+		Data: data,
 	})
+}
 
-	elf.Sections = append(elf.Sections, data...)
+// AddSection adds a section to the ELF file.
+func (elf *ELF64) AddSection(data []byte, typ SectionType, flags SectionFlags) {
+	elf.Sections = append(elf.Sections, &Section{
+		Header: SectionHeader64{
+			NameOffset:      0,
+			Type:            typ,
+			Flags:           flags,
+			SizeInFileImage: int64(len(data)),
+			Align:           sectionAlign,
+		},
+		Data: data,
+	})
 }
 
 // WriteToFile writes the ELF binary to a file.
@@ -126,17 +129,27 @@ func (elf *ELF64) WriteToFile(fileName string) error {
 func (elf *ELF64) writeTo(writer *bufio.Writer) {
 	binary.Write(writer, binary.LittleEndian, &elf.Header64)
 
-	for _, programHeader := range elf.ProgramHeaders {
-		binary.Write(writer, binary.LittleEndian, &programHeader)
+	for _, program := range elf.Programs {
+		binary.Write(writer, binary.LittleEndian, &program.Header)
 	}
 
-	for _, sectionHeader := range elf.SectionHeaders {
-		binary.Write(writer, binary.LittleEndian, &sectionHeader)
+	for _, section := range elf.Sections {
+		binary.Write(writer, binary.LittleEndian, &section.Header)
 	}
 
-	writer.Write(elf.InstructionsPadding)
-	writer.Write(elf.Instructions)
-	writer.Write(elf.SectionsPadding)
-	writer.Write(elf.Sections)
+	for _, program := range elf.Programs {
+		writer.Write(program.Padding)
+		writer.Write(program.Data)
+	}
+
+	for _, section := range elf.Sections {
+		writer.Write(section.Padding)
+		writer.Write(section.Data)
+	}
+
 	writer.Flush()
+}
+
+func calculatePadding(n int64, align int64) int64 {
+	return align - (n % align)
 }

@@ -5,8 +5,8 @@ const ProgramHeader64Size = 56
 
 // ProgramHeader points to the executable part of our program.
 type ProgramHeader64 struct {
-	Type            int32
-	Flags           int32
+	Type            ProgramType
+	Flags           ProgramFlags
 	Offset          int64
 	VirtualAddress  int64
 	PhysicalAddress int64
