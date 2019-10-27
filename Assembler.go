@@ -115,26 +115,27 @@ func (a *Assembler) MovRegisterRegister(registerNameTo string, registerNameFrom 
 
 // PushRegister pushes the value inside the register onto the stack.
 func (a *Assembler) PushRegister(registerName string) {
-	baseCode := byte(0x50)
-	register, exists := registers[registerName]
-
-	if !exists {
-		panic("Unknown register name: " + registerName)
-	}
-
-	a.WriteByte(baseCode + register.BaseCodeOffset)
+	a.encodeRegister(0x50, registerName)
 }
 
 // PopRegister pops a value from the stack and saves it into the register.
 func (a *Assembler) PopRegister(registerName string) {
-	baseCode := byte(0x58)
-	register, exists := registers[registerName]
+	a.encodeRegister(0x58, registerName)
+}
+
+// encodeRegister encodes an instruction that only needs a register name.
+func (a *Assembler) encodeRegister(baseCode byte, registerNameTo string) {
+	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
-		panic("Unknown register name: " + registerName)
+		panic("Unknown register name: " + registerNameTo)
 	}
 
-	a.WriteByte(baseCode + register.BaseCodeOffset)
+	if registerTo.BaseCodeOffset >= 8 {
+		a.WriteByte(REX(0, 0, 0, 1))
+	}
+
+	a.WriteByte(baseCode + registerTo.BaseCodeOffset%8)
 }
 
 func (a *Assembler) Syscall(parameters ...interface{}) {
