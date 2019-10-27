@@ -11,8 +11,8 @@ import (
 
 type Assembler struct {
 	bytes.Buffer
-	Strings         *sections.Strings
-	SectionPointers []utils.Pointer
+	Strings        *sections.Strings
+	StringPointers []utils.Pointer
 }
 
 func New() *Assembler {
@@ -24,7 +24,7 @@ func New() *Assembler {
 func (a *Assembler) AddString(msg string) int64 {
 	address := a.Strings.Add(msg)
 
-	a.SectionPointers = append(a.SectionPointers, utils.Pointer{
+	a.StringPointers = append(a.StringPointers, utils.Pointer{
 		Address:  address,
 		Position: a.Len(),
 	})

@@ -28,7 +28,7 @@ type ELF64 struct {
 }
 
 // New creates a new 64-bit ELF binary.
-func New(instructions []byte, strings *sections.Strings, sectionPointers []utils.Pointer) *ELF64 {
+func New(instructions []byte, strings *sections.Strings, stringPointers []utils.Pointer) *ELF64 {
 	elf := &ELF64{
 		Header64: Header64{
 			Magic:                  [4]byte{0x7F, 'E', 'L', 'F'},
@@ -88,8 +88,8 @@ func New(instructions []byte, strings *sections.Strings, sectionPointers []utils
 		elf.SectionHeaderOffset = 0
 	}
 
-	// Apply offsets to all section addresses
-	for _, pointer := range sectionPointers {
+	// Apply offsets to all string addresses
+	for _, pointer := range stringPointers {
 		binary.LittleEndian.PutUint64(instructions[pointer.Position:pointer.Position+8], uint64(address+endOfInstructions+pointer.Address))
 	}
 

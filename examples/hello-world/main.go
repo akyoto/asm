@@ -13,7 +13,7 @@ func main() {
 	a.Println("Nice day, isn't it?")
 	a.Exit(0)
 
-	program := elf.New(a.Bytes(), a.Strings, a.SectionPointers)
+	program := elf.New(a.Bytes(), a.Strings, a.StringPointers)
 	err := program.WriteToFile("hello")
 
 	if err != nil {
