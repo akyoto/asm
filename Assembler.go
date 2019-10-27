@@ -4,25 +4,25 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/akyoto/asm/stringtable"
+	"github.com/akyoto/asm/sections"
 	"github.com/akyoto/asm/syscall"
 	"github.com/akyoto/asm/utils"
 )
 
 type Assembler struct {
 	bytes.Buffer
-	StringTable     *stringtable.StringTable
+	Strings         *sections.Strings
 	SectionPointers []utils.Pointer
 }
 
 func New() *Assembler {
 	return &Assembler{
-		StringTable: stringtable.New(),
+		Strings: sections.NewStrings(),
 	}
 }
 
 func (a *Assembler) AddString(msg string) int64 {
-	address := a.StringTable.Add(msg)
+	address := a.Strings.Add(msg)
 
 	a.SectionPointers = append(a.SectionPointers, utils.Pointer{
 		Address:  address,

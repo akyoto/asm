@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"os"
 
-	"github.com/akyoto/asm/stringtable"
+	"github.com/akyoto/asm/sections"
 	"github.com/akyoto/asm/utils"
 )
 
@@ -28,7 +28,7 @@ type ELF64 struct {
 }
 
 // New creates a new 64-bit ELF binary.
-func New(instructions []byte, strings *stringtable.StringTable, sectionPointers []utils.Pointer) *ELF64 {
+func New(instructions []byte, strings *sections.Strings, sectionPointers []utils.Pointer) *ELF64 {
 	elf := &ELF64{
 		Header64: Header64{
 			Magic:                  [4]byte{0x7F, 'E', 'L', 'F'},
