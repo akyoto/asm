@@ -41,8 +41,9 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []utils.
 		},
 	}
 
-	elf.AddProgram(instructions, ProgramTypeLOAD, ProgramFlagsExecutable|ProgramFlagsReadable)
+	elf.AddProgram(instructions, ProgramTypeLOAD, ProgramFlagsExecutable)
 	elf.AddSection(strings.Bytes(), SectionTypePROGBITS, SectionFlagsAllocate)
+	// elf.AddSection(nil, SectionTypeNOBITS, SectionFlagsAllocate|SectionFlagsWritable)
 
 	// Header count
 	elf.ProgramHeaderEntryCount = int16(len(elf.Programs))
@@ -52,25 +53,35 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []utils.
 	endOfProgramHeaders := elf.ProgramHeaderOffset + int64(elf.ProgramHeaderEntryCount)*int64(elf.ProgramHeaderEntrySize)
 	elf.SectionHeaderOffset = endOfProgramHeaders
 	endOfSectionHeaders := elf.SectionHeaderOffset + int64(elf.SectionHeaderEntryCount)*int64(elf.SectionHeaderEntrySize)
-	entryPointInFile := endOfSectionHeaders
+	offset := endOfSectionHeaders
 
-	// Padding for instructions
-	padding := calculatePadding(entryPointInFile, programAlign)
-	entryPointInFile += padding
-	elf.Programs[0].Padding = bytes.Repeat([]byte{0}, int(padding))
-	elf.EntryPointInMemory = address + entryPointInFile
-	elf.Programs[0].Header.Offset = entryPointInFile
-	elf.Programs[0].Header.VirtualAddress = elf.EntryPointInMemory
-	elf.Programs[0].Header.PhysicalAddress = elf.EntryPointInMemory
+	// Padding for programs
+	for _, program := range elf.Programs {
+		padding := calculatePadding(offset, programAlign)
+		offset += padding
+
+		if elf.EntryPointInMemory == 0 {
+			elf.EntryPointInMemory = address + offset
+		}
+
+		program.Padding = bytes.Repeat([]byte{0}, int(padding))
+		program.Header.Offset = offset
+		program.Header.VirtualAddress = address + offset
+		program.Header.PhysicalAddress = address + offset
+		offset += int64(len(program.Data))
+	}
 
 	// Padding for sections
-	endOfInstructions := entryPointInFile + int64(len(instructions))
-	padding = calculatePadding(endOfInstructions, sectionAlign)
-	endOfInstructions += padding
-	elf.Sections[0].Padding = bytes.Repeat([]byte{0}, int(padding))
-	elf.Sections[0].Header.Offset = endOfInstructions
-	elf.Sections[0].Header.VirtualAddress = address + endOfInstructions
+	for _, section := range elf.Sections {
+		padding := calculatePadding(offset, sectionAlign)
+		offset += padding
+		section.Padding = bytes.Repeat([]byte{0}, int(padding))
+		section.Header.Offset = offset
+		section.Header.VirtualAddress = address + offset
+		offset += int64(len(section.Data))
+	}
 
+	// Special case so that readelf doesn't complain
 	if elf.SectionHeaderEntryCount == 0 {
 		elf.SectionHeaderOffset = 0
 	}
@@ -78,7 +89,7 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []utils.
 	// Apply offsets to all string addresses
 	for _, pointer := range stringPointers {
 		oldAddress := instructions[pointer.Position : pointer.Position+8]
-		newAddress := uint64(address + endOfInstructions + pointer.Address)
+		newAddress := uint64(address + elf.Sections[0].Header.Offset + pointer.Address)
 		binary.LittleEndian.PutUint64(oldAddress, newAddress)
 	}
 
@@ -91,8 +102,6 @@ func (elf *ELF64) AddProgram(data []byte, typ ProgramType, flags ProgramFlags) {
 		Header: ProgramHeader64{
 			Type:            typ,
 			Flags:           flags,
-			VirtualAddress:  address,
-			PhysicalAddress: address,
 			SizeInFileImage: int64(len(data)),
 			SizeInMemory:    int64(len(data)),
 			Align:           programAlign,
