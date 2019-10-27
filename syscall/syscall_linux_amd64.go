@@ -331,13 +331,3 @@ const (
 	Preadv2
 	Pwritev2
 )
-
-var Registers = []string{
-	"rax",
-	"rdi",
-	"rsi",
-	"rdx",
-	"r10",
-	"r8",
-	"r9",
-}

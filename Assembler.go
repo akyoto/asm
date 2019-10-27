@@ -78,7 +78,7 @@ func (a *Assembler) Print(msg string) {
 }
 
 func (a *Assembler) Open(fileName string) {
-	a.Syscall(syscall.Open, fileName, int32(0666))
+	a.Syscall(syscall.Open, 2, fileName, int32(0102), int32(0666))
 }
 
 func (a *Assembler) Exit(code int32) {
