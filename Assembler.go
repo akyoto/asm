@@ -38,8 +38,8 @@ func (a *Assembler) WriteBytes(someBytes ...byte) {
 	}
 }
 
-// MovRegisterNumber moves a number into the given register.
-func (a *Assembler) MovRegisterNumber(registerNameTo string, num interface{}) {
+// MoveRegisterNumber moves a number into the given register.
+func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
 	baseCode := byte(0xb8)
 	registerTo, exists := registers[registerNameTo]
 
@@ -79,8 +79,8 @@ func (a *Assembler) MovRegisterNumber(registerNameTo string, num interface{}) {
 	}
 }
 
-// MovRegisterRegister moves a register value into another register.
-func (a *Assembler) MovRegisterRegister(registerNameTo string, registerNameFrom string) {
+// MoveRegisterRegister moves a register value into another register.
+func (a *Assembler) MoveRegisterRegister(registerNameTo string, registerNameFrom string) {
 	baseCode := byte(0x89)
 	registerTo, exists := registers[registerNameTo]
 
@@ -140,7 +140,7 @@ func (a *Assembler) encodeRegister(baseCode byte, registerNameTo string) {
 
 func (a *Assembler) Syscall(parameters ...interface{}) {
 	for count, parameter := range parameters {
-		a.MovRegisterNumber(syscall.Registers[count], parameter)
+		a.MoveRegisterNumber(syscall.Registers[count], parameter)
 	}
 
 	a.WriteBytes(0x0f, 0x05)
