@@ -138,6 +138,16 @@ func (a *Assembler) encodeRegister(baseCode byte, registerNameTo string) {
 	a.WriteByte(baseCode + registerTo.BaseCodeOffset%8)
 }
 
+// ReadTimeStampCounterAndProcessorID is used for performance benchmarks.
+func (a *Assembler) ReadTimeStampCounterAndProcessorID() {
+	a.WriteBytes(0x0f, 0x01, 0xf9)
+}
+
+// CPUID is used to query CPU relevant data based on the contents of EAX.
+func (a *Assembler) CPUID() {
+	a.WriteBytes(0x0f, 0xa2)
+}
+
 func (a *Assembler) Syscall(parameters ...interface{}) {
 	for count, parameter := range parameters {
 		a.MoveRegisterNumber(syscall.Registers[count], parameter)
