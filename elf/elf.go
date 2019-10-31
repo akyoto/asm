@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	address      = 0x400000
+	baseAddress  = 0x400000
 	programAlign = 16
 	sectionAlign = 16
 )
@@ -60,13 +60,13 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []sectio
 		offset += padding
 
 		if elf.EntryPointInMemory == 0 {
-			elf.EntryPointInMemory = address + offset
+			elf.EntryPointInMemory = baseAddress + offset
 		}
 
 		program.Padding = bytes.Repeat([]byte{0}, int(padding))
 		program.Header.Offset = offset
-		program.Header.VirtualAddress = address + offset
-		program.Header.PhysicalAddress = address + offset
+		program.Header.VirtualAddress = baseAddress + offset
+		program.Header.PhysicalAddress = baseAddress + offset
 		offset += int64(len(program.Data))
 	}
 
@@ -76,7 +76,7 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []sectio
 		offset += padding
 		section.Padding = bytes.Repeat([]byte{0}, int(padding))
 		section.Header.Offset = offset
-		section.Header.VirtualAddress = address + offset
+		section.Header.VirtualAddress = baseAddress + offset
 		offset += int64(len(section.Data))
 	}
 
@@ -85,11 +85,11 @@ func New(instructions []byte, strings *sections.Strings, stringPointers []sectio
 		elf.SectionHeaderOffset = 0
 	}
 
-	// Apply offsets to all string addresses
+	// Add section offset to all string addresses
 	for _, pointer := range stringPointers {
-		oldAddress := instructions[pointer.Position : pointer.Position+8]
-		newAddress := uint64(address + elf.Sections[0].Header.Offset + pointer.Address)
-		binary.LittleEndian.PutUint64(oldAddress, newAddress)
+		oldAddressSlice := instructions[pointer.Position : pointer.Position+8]
+		newAddress := uint64(baseAddress + elf.Sections[0].Header.Offset + pointer.Address)
+		binary.LittleEndian.PutUint64(oldAddressSlice, newAddress)
 	}
 
 	return elf
