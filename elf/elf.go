@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/akyoto/asm/sections"
-	"github.com/akyoto/asm/utils"
 )
 
 const (
@@ -24,7 +23,7 @@ type ELF64 struct {
 }
 
 // New creates a new 64-bit ELF binary.
-func New(instructions []byte, strings *sections.Strings, stringPointers []utils.Pointer) *ELF64 {
+func New(instructions []byte, strings *sections.Strings, stringPointers []sections.Pointer) *ELF64 {
 	elf := &ELF64{
 		Header64: Header64{
 			Magic:                  [4]byte{0x7F, 'E', 'L', 'F'},
