@@ -7,12 +7,6 @@ import (
 	"github.com/akyoto/assert"
 )
 
-func TestExit(t *testing.T) {
-	a := asm.New()
-	a.Exit(0)
-	assert.DeepEqual(t, a.Bytes(), []byte{0xb8, 0x3c, 0x00, 0x00, 0x00, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x05})
-}
-
 func TestHelloWorld(t *testing.T) {
 	a := asm.New()
 	a.Println("Hello World")
@@ -44,26 +38,8 @@ func TestProcedures(t *testing.T) {
 	assert.Equal(t, len(a.Labels), 3)
 }
 
-func TestPushRegister(t *testing.T) {
+func TestExit(t *testing.T) {
 	a := asm.New()
-	a.PushRegister("rbp")
-	assert.DeepEqual(t, a.Bytes(), []byte{0x55})
-}
-
-func TestPushRegister2(t *testing.T) {
-	a := asm.New()
-	a.PushRegister("r9")
-	assert.DeepEqual(t, a.Bytes(), []byte{0x41, 0x51})
-}
-
-func TestPopRegister(t *testing.T) {
-	a := asm.New()
-	a.PopRegister("rbp")
-	assert.DeepEqual(t, a.Bytes(), []byte{0x5d})
-}
-
-func TestPopRegister2(t *testing.T) {
-	a := asm.New()
-	a.PopRegister("r9")
-	assert.DeepEqual(t, a.Bytes(), []byte{0x41, 0x59})
+	a.Exit(0)
+	assert.DeepEqual(t, a.Bytes(), []byte{0xb8, 0x3c, 0x00, 0x00, 0x00, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x05})
 }
