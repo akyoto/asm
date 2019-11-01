@@ -8,14 +8,22 @@
 
 An x86-64 assembler written in Go.
 
+## Status
+
+This project is currently work in progress. Contributions are welcome.
+
 ## Architectures
 
 - [x] Linux x86-64 (ELF binaries)
 - [ ] ...
 
-## Registers
+## Examples
 
-### General purpose registers
+See [examples](https://github.com/akyoto/asm/tree/master/examples).
+
+## Reference
+
+### Registers
 
 |  8B  |  4B  |  2B  |  1B  |
 |------|------|------|------|
