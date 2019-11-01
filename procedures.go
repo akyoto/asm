@@ -12,7 +12,7 @@ func (a *Assembler) AddLabel(name string) {
 	// Fix all references to previously undefined labels
 	for _, position := range a.undefinedCallLabels[name] {
 		slice := a.code[position : position+4]
-		binary.LittleEndian.PutUint32(slice, uint32(address-(position+4)))
+		binary.LittleEndian.PutUint32(slice, address-(position+4))
 	}
 
 	delete(a.undefinedCallLabels, name)
