@@ -4,10 +4,6 @@
 
 An x86-64 assembler written in Go.
 
-## Status
-
-This project is currently work in progress. Contributions are welcome.
-
 ## Architectures
 
 - [x] Linux x86-64 (ELF binaries)
@@ -39,5 +35,9 @@ See [examples](https://github.com/akyoto/asm/tree/master/examples).
 | r13  | r13d | r13w | r13b |
 | r14  | r14d | r14w | r14b |
 | r15  | r15d | r15w | r15b |
+
+## Status
+
+This project is currently work in progress. Contributions are welcome.
 
 {go:footer}
