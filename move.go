@@ -20,7 +20,7 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
 	w := byte(0)
 
 	switch num.(type) {
-	case string, int64:
+	case string, uint64, int64:
 		w = 1
 	}
 

@@ -44,36 +44,6 @@ func TestProcedures(t *testing.T) {
 	assert.Equal(t, len(a.Labels), 3)
 }
 
-func TestMoveRegisterNumber(t *testing.T) {
-	a := asm.New()
-	a.MoveRegisterNumber("rax", int32(0xff))
-	assert.DeepEqual(t, a.Bytes(), []byte{0xb8, 0xff, 0, 0, 0})
-}
-
-func TestMoveRegisterNumber2(t *testing.T) {
-	a := asm.New()
-	a.MoveRegisterNumber("rcx", int32(0xff))
-	assert.DeepEqual(t, a.Bytes(), []byte{0xb8 + 1, 0xff, 0, 0, 0})
-}
-
-func TestMoveRegisterRegister(t *testing.T) {
-	a := asm.New()
-	a.MoveRegisterRegister("rax", "rax")
-	assert.DeepEqual(t, a.Bytes(), []byte{0x48, 0x89, 0xc0})
-}
-
-func TestMoveRegisterRegister2(t *testing.T) {
-	a := asm.New()
-	a.MoveRegisterRegister("rcx", "r9")
-	assert.DeepEqual(t, a.Bytes(), []byte{0x4c, 0x89, 0xc9})
-}
-
-func TestMoveRegisterRegister3(t *testing.T) {
-	a := asm.New()
-	a.MoveRegisterRegister("r9", "rcx")
-	assert.DeepEqual(t, a.Bytes(), []byte{0x49, 0x89, 0xc9})
-}
-
 func TestPushRegister(t *testing.T) {
 	a := asm.New()
 	a.PushRegister("rbp")
