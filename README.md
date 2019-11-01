@@ -2,6 +2,11 @@
 
 An x86-64 assembler written in Go.
 
+## Architectures
+
+- [x] Linux x86-64 (ELF binaries)
+- [ ] ...
+
 ## Registers
 
 ### General purpose registers

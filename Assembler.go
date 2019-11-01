@@ -1,27 +1,32 @@
 package asm
 
 import (
-	"bytes"
+	"fmt"
+	"log"
 
 	"github.com/akyoto/asm/sections"
 )
 
 type Assembler struct {
-	bytes.Buffer
-	Strings        *sections.Strings
-	StringPointers []sections.Pointer
+	code                []byte
+	Strings             *sections.Strings
+	StringPointers      []sections.Pointer64
+	Labels              map[string]int32
+	undefinedCallLabels map[string][]int32
 }
 
 func New() *Assembler {
 	return &Assembler{
-		Strings: sections.NewStrings(),
+		Strings:             sections.NewStrings(),
+		Labels:              map[string]int32{},
+		undefinedCallLabels: map[string][]int32{},
 	}
 }
 
 func (a *Assembler) AddString(msg string) int64 {
 	address := a.Strings.Add(msg)
 
-	a.StringPointers = append(a.StringPointers, sections.Pointer{
+	a.StringPointers = append(a.StringPointers, sections.Pointer64{
 		Address:  address,
 		Position: a.Len(),
 	})
@@ -29,8 +34,29 @@ func (a *Assembler) AddString(msg string) int64 {
 	return address
 }
 
+func (a *Assembler) Write(code []byte) (int, error) {
+	a.code = append(a.code, code...)
+	return len(code), nil
+}
+
 func (a *Assembler) WriteBytes(someBytes ...byte) {
-	for _, b := range someBytes {
-		a.WriteByte(b)
+	a.code = append(a.code, someBytes...)
+}
+
+func (a *Assembler) Len() int32 {
+	return int32(len(a.code))
+}
+
+func (a *Assembler) Bytes() []byte {
+	if len(a.undefinedCallLabels) > 0 {
+		errorMessage := ""
+
+		for label := range a.undefinedCallLabels {
+			errorMessage += fmt.Sprintf("Undefined label: %s\n", label)
+		}
+
+		log.Fatal(errorMessage)
 	}
+
+	return a.code
 }

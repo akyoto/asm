@@ -10,11 +10,10 @@ import (
 func main() {
 	a := asm.New()
 	a.Println("Hello World")
-	a.Println("Nice day, isn't it?")
 	a.Exit(0)
 
 	program := elf.New(a.Bytes(), a.Strings, a.StringPointers)
-	err := program.WriteToFile("hello")
+	err := program.WriteToFile("program")
 
 	if err != nil {
 		log.Fatal(err)

@@ -1,5 +1,7 @@
 package asm
 
+import "log"
+
 // PushRegister pushes the value inside the register onto the stack.
 func (a *Assembler) PushRegister(registerName string) {
 	a.encodeRegister(0x50, registerName)
@@ -15,12 +17,12 @@ func (a *Assembler) encodeRegister(baseCode byte, registerNameTo string) {
 	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
-		panic("Unknown register name: " + registerNameTo)
+		log.Fatal("Unknown register name: " + registerNameTo)
 	}
 
 	if registerTo.BaseCodeOffset >= 8 {
-		a.WriteByte(REX(0, 0, 0, 1))
+		a.WriteBytes(REX(0, 0, 0, 1))
 	}
 
-	a.WriteByte(baseCode + registerTo.BaseCodeOffset%8)
+	a.WriteBytes(baseCode + registerTo.BaseCodeOffset%8)
 }

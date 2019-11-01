@@ -1,6 +1,9 @@
 package asm
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"log"
+)
 
 // MoveRegisterNumber moves a number into the given register.
 func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
@@ -8,7 +11,7 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
 	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
-		panic("Unknown register name: " + registerNameTo)
+		log.Fatal("Unknown register name: " + registerNameTo)
 	}
 
 	// 64-bit operand
@@ -28,11 +31,11 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
 
 	// REX
 	if b != 0 || w != 0 {
-		a.WriteByte(REX(w, 0, 0, b))
+		a.WriteBytes(REX(w, 0, 0, b))
 	}
 
 	// Base code
-	a.WriteByte(baseCode + registerTo.BaseCodeOffset%8)
+	a.WriteBytes(baseCode + registerTo.BaseCodeOffset%8)
 
 	// Number
 	switch v := num.(type) {
@@ -49,13 +52,13 @@ func (a *Assembler) MoveRegisterRegister(registerNameTo string, registerNameFrom
 	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
-		panic("Unknown register name: " + registerNameTo)
+		log.Fatal("Unknown register name: " + registerNameTo)
 	}
 
 	registerFrom, exists := registers[registerNameFrom]
 
 	if !exists {
-		panic("Unknown register name: " + registerNameFrom)
+		log.Fatal("Unknown register name: " + registerNameFrom)
 	}
 
 	if registerTo.BitSize == 64 {
@@ -70,9 +73,9 @@ func (a *Assembler) MoveRegisterRegister(registerNameTo string, registerNameFrom
 			b = 1
 		}
 
-		a.WriteByte(REX(1, r, 0, b))
+		a.WriteBytes(REX(1, r, 0, b))
 	}
 
-	a.WriteByte(baseCode)
-	a.WriteByte(ModRM(0b11, registerFrom.BaseCodeOffset, registerTo.BaseCodeOffset))
+	a.WriteBytes(baseCode)
+	a.WriteBytes(ModRM(0b11, registerFrom.BaseCodeOffset, registerTo.BaseCodeOffset))
 }
