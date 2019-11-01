@@ -10,23 +10,25 @@ import (
 type Assembler struct {
 	code                []byte
 	Strings             *sections.Strings
-	StringPointers      []sections.Pointer64
-	Labels              map[string]int32
-	undefinedCallLabels map[string][]int32
+	StringPointers      []sections.Pointer
+	Labels              map[string]sections.Address
+	undefinedCallLabels map[string][]sections.Address
+	EnableOptimizer     bool
 }
 
 func New() *Assembler {
 	return &Assembler{
 		Strings:             sections.NewStrings(),
-		Labels:              map[string]int32{},
-		undefinedCallLabels: map[string][]int32{},
+		Labels:              map[string]sections.Address{},
+		undefinedCallLabels: map[string][]sections.Address{},
+		EnableOptimizer:     true,
 	}
 }
 
-func (a *Assembler) AddString(msg string) int64 {
+func (a *Assembler) AddString(msg string) sections.Address {
 	address := a.Strings.Add(msg)
 
-	a.StringPointers = append(a.StringPointers, sections.Pointer64{
+	a.StringPointers = append(a.StringPointers, sections.Pointer{
 		Address:  address,
 		Position: a.Len(),
 	})
@@ -43,8 +45,8 @@ func (a *Assembler) WriteBytes(someBytes ...byte) {
 	a.code = append(a.code, someBytes...)
 }
 
-func (a *Assembler) Len() int32 {
-	return int32(len(a.code))
+func (a *Assembler) Len() uint32 {
+	return uint32(len(a.code))
 }
 
 func (a *Assembler) Bytes() []byte {

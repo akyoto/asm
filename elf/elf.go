@@ -92,8 +92,8 @@ func New(a *asm.Assembler) *ELF64 {
 	// Add section offset to all string addresses
 	for _, pointer := range stringPointers {
 		oldAddressSlice := instructions[pointer.Position : pointer.Position+8]
-		newAddress := uint64(baseAddress + elf.Sections[0].Header.Offset + pointer.Address)
-		binary.LittleEndian.PutUint64(oldAddressSlice, newAddress)
+		newAddress := uint32(baseAddress) + uint32(elf.Sections[0].Header.Offset) + pointer.Address
+		binary.LittleEndian.PutUint32(oldAddressSlice, newAddress)
 	}
 
 	return elf

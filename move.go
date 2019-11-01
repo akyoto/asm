@@ -3,12 +3,13 @@ package asm
 import (
 	"encoding/binary"
 	"log"
+	"math"
 
 	"github.com/akyoto/asm/opcode"
 )
 
 // MoveRegisterNumber moves a number into the given register.
-func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
+func (a *Assembler) MoveRegisterNumber(registerNameTo string, number interface{}) {
 	baseCode := byte(0xb8)
 	registerTo, exists := registers[registerNameTo]
 
@@ -16,15 +17,69 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
 		log.Fatal("Unknown register name: " + registerNameTo)
 	}
 
-	// 64-bit operand
+	if registerTo.BitSize == 8 {
+		baseCode = 0xb0
+	}
+
+	if registerTo.BitSize == 16 {
+		a.WriteBytes(0x66)
+	}
+
+	operandBitSize := 0
+	numberConverted := uint64(0)
+	isString := false
+
+	switch value := number.(type) {
+	case string:
+		operandBitSize = 32
+		numberConverted = 0
+		isString = true
+
+	case int64:
+		operandBitSize = 64
+		numberConverted = uint64(value)
+
+	case int:
+		operandBitSize = 64
+		numberConverted = uint64(value)
+
+	case int32:
+		operandBitSize = 32
+		numberConverted = uint64(value)
+
+	case int16:
+		operandBitSize = 16
+		numberConverted = uint64(value)
+
+	case byte:
+		operandBitSize = 8
+		numberConverted = uint64(value)
+
+	default:
+		log.Fatalf("Unsupported type: %v", value)
+	}
+
+	registerBitSize := registerTo.BitSize
+
+	if a.EnableOptimizer && registerBitSize == 64 && numberConverted < math.MaxUint32 {
+		registerBitSize = 32
+		operandBitSize = 32
+	}
+
+	if registerBitSize != operandBitSize {
+		log.Printf("Register size (%d) doesn't match operand size (%d)", registerBitSize, operandBitSize)
+	}
+
+	bitSize := registerBitSize
+
+	// 64-bit register
 	w := byte(0)
 
-	switch num.(type) {
-	case string, uint64, int64:
+	if bitSize == 64 {
 		w = 1
 	}
 
-	// Register extension
+	// Are we accessing any of the 64-bit only registers (r8 up to r15)?
 	b := byte(0)
 
 	if registerTo.BaseCodeOffset >= 8 {
@@ -32,20 +87,39 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
 	}
 
 	// REX
-	if b != 0 || w != 0 {
+	if w != 0 || b != 0 || registerTo.MustHaveREX {
 		a.WriteBytes(opcode.REX(w, 0, 0, b))
 	}
 
 	// Base code
 	a.WriteBytes(baseCode + registerTo.BaseCodeOffset%8)
 
-	// Number
-	switch v := num.(type) {
-	case string:
-		_ = binary.Write(a, binary.LittleEndian, a.AddString(v))
-	default:
-		_ = binary.Write(a, binary.LittleEndian, num)
+	// Add string address after the instruction code
+	if isString {
+		numberConverted = uint64(a.AddString(number.(string)))
 	}
+
+	// Number
+	var buffer []byte
+
+	switch bitSize {
+	case 64:
+		buffer = make([]byte, 8)
+		binary.LittleEndian.PutUint64(buffer, numberConverted)
+
+	case 32:
+		buffer = make([]byte, 4)
+		binary.LittleEndian.PutUint32(buffer, uint32(numberConverted))
+
+	case 16:
+		buffer = make([]byte, 2)
+		binary.LittleEndian.PutUint16(buffer, uint16(numberConverted))
+
+	case 8:
+		buffer = []byte{byte(numberConverted)}
+	}
+
+	_, _ = a.Write(buffer)
 }
 
 // MoveRegisterRegister moves a register value into another register.

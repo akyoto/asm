@@ -13,7 +13,7 @@ func (a *Assembler) Syscall(parameters ...interface{}) {
 
 // Print prints a message on the terminal.
 func (a *Assembler) Print(msg string) {
-	a.Syscall(syscall.Write, int32(1), msg, int32(len(msg)))
+	a.Syscall(syscall.Write, 1, msg, len(msg))
 }
 
 // Print prints a message followed by a new line on the terminal.
@@ -23,7 +23,7 @@ func (a *Assembler) Println(msg string) {
 
 // Open opens a file.
 func (a *Assembler) Open(fileName string) {
-	a.Syscall(syscall.Open, 2, fileName, int32(0102), int32(0666))
+	a.Syscall(syscall.Open, 2, fileName, 0102, 0666)
 }
 
 // Exit terminates the program.
