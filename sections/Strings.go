@@ -35,3 +35,8 @@ func (section *Strings) Add(text string) int64 {
 func (section *Strings) Bytes() []byte {
 	return section.raw.Bytes()
 }
+
+// Count returns the number of added strings.
+func (section *Strings) Count() int {
+	return len(section.addresses)
+}
