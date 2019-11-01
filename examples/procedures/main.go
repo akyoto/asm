@@ -15,12 +15,12 @@ func main() {
 	a.Call("niceday")
 	a.Call("exit")
 
-	a.AddLabel("niceday")
-	a.Println("Nice day, isn't it?")
-	a.Return()
-
 	a.AddLabel("hello")
 	a.Println("Hello World")
+	a.Return()
+
+	a.AddLabel("niceday")
+	a.Println("Nice day, isn't it?")
 	a.Return()
 
 	a.AddLabel("exit")
