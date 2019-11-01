@@ -12,7 +12,7 @@ func NewZero() *Zero {
 
 // Add adds the given number of bytes to the section.
 func (section *Zero) Add(count int64) int64 {
-	position := int64(section.length)
+	position := section.length
 	section.length += count
 	return position
 }
