@@ -1,4 +1,4 @@
-package asm
+package opcode
 
 // REX is used to generate a REX prefix.
 // w, r, x and b can only be set to either 0 or 1.

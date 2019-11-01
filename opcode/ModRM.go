@@ -1,4 +1,4 @@
-package asm
+package opcode
 
 // ModRM is used to generate a ModRM suffix.
 // - mod: 2 bits

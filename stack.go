@@ -1,6 +1,10 @@
 package asm
 
-import "log"
+import (
+	"log"
+
+	"github.com/akyoto/asm/opcode"
+)
 
 // PushRegister pushes the value inside the register onto the stack.
 func (a *Assembler) PushRegister(registerName string) {
@@ -21,7 +25,7 @@ func (a *Assembler) encodeRegister(baseCode byte, registerNameTo string) {
 	}
 
 	if registerTo.BaseCodeOffset >= 8 {
-		a.WriteBytes(REX(0, 0, 0, 1))
+		a.WriteBytes(opcode.REX(0, 0, 0, 1))
 	}
 
 	a.WriteBytes(baseCode + registerTo.BaseCodeOffset%8)

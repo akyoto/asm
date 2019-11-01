@@ -1,9 +1,9 @@
-package asm_test
+package opcode_test
 
 import (
 	"testing"
 
-	"github.com/akyoto/asm"
+	"github.com/akyoto/asm/opcode"
 	"github.com/akyoto/assert"
 )
 
@@ -28,7 +28,7 @@ func TestREX(t *testing.T) {
 	}
 
 	for _, test := range testData {
-		rex := asm.REX(test.w, test.r, test.x, test.b)
+		rex := opcode.REX(test.w, test.r, test.x, test.b)
 		assert.Equal(t, rex, test.expected)
 	}
 }

@@ -3,6 +3,8 @@ package asm
 import (
 	"encoding/binary"
 	"log"
+
+	"github.com/akyoto/asm/opcode"
 )
 
 // MoveRegisterNumber moves a number into the given register.
@@ -31,7 +33,7 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, num interface{}) {
 
 	// REX
 	if b != 0 || w != 0 {
-		a.WriteBytes(REX(w, 0, 0, b))
+		a.WriteBytes(opcode.REX(w, 0, 0, b))
 	}
 
 	// Base code
@@ -73,9 +75,9 @@ func (a *Assembler) MoveRegisterRegister(registerNameTo string, registerNameFrom
 			b = 1
 		}
 
-		a.WriteBytes(REX(1, r, 0, b))
+		a.WriteBytes(opcode.REX(1, r, 0, b))
 	}
 
 	a.WriteBytes(baseCode)
-	a.WriteBytes(ModRM(0b11, registerFrom.BaseCodeOffset, registerTo.BaseCodeOffset))
+	a.WriteBytes(opcode.ModRM(0b11, registerFrom.BaseCodeOffset, registerTo.BaseCodeOffset))
 }
