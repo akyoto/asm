@@ -31,43 +31,50 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, number interface{}
 
 	switch value := number.(type) {
 	case string:
-		operandBitSize = 32
 		numberConverted = 0
 		isString = true
 
 	case int64:
-		operandBitSize = 64
 		numberConverted = uint64(value)
 
 	case int:
-		operandBitSize = 64
 		numberConverted = uint64(value)
 
 	case int32:
-		operandBitSize = 32
 		numberConverted = uint64(value)
 
 	case int16:
-		operandBitSize = 16
 		numberConverted = uint64(value)
 
 	case byte:
-		operandBitSize = 8
 		numberConverted = uint64(value)
 
 	default:
 		log.Fatalf("Unsupported type: %v", value)
 	}
 
-	registerBitSize := registerTo.BitSize
+	switch {
+	case numberConverted <= math.MaxUint8:
+		operandBitSize = 8
 
-	if a.EnableOptimizer && registerBitSize == 64 && numberConverted < math.MaxUint32 {
-		registerBitSize = 32
+	case numberConverted <= math.MaxUint16:
+		operandBitSize = 16
+
+	case numberConverted <= math.MaxUint32:
 		operandBitSize = 32
+
+	default:
+		operandBitSize = 64
 	}
 
-	if registerBitSize != operandBitSize {
-		log.Printf("Register size (%d) doesn't match operand size (%d)", registerBitSize, operandBitSize)
+	registerBitSize := registerTo.BitSize
+
+	if a.EnableOptimizer && registerBitSize == 64 && operandBitSize < 64 {
+		registerBitSize = 32
+	}
+
+	if operandBitSize > registerBitSize {
+		log.Printf("Operand '%v' (%d bits) doesn't fit into register %s (%d bits)", number, operandBitSize, registerNameTo, registerBitSize)
 	}
 
 	bitSize := registerBitSize
