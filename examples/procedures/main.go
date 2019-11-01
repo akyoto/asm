@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	// Specify program code
 	a := asm.New()
 
 	a.Call("hello")
@@ -25,6 +26,7 @@ func main() {
 	a.AddLabel("exit")
 	a.Exit(0)
 
+	// Compile and save to file
 	err := elf.New(a).WriteToFile("program")
 
 	if err != nil {

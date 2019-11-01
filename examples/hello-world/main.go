@@ -8,12 +8,13 @@ import (
 )
 
 func main() {
+	// Specify program code
 	a := asm.New()
 	a.Println("Hello World")
 	a.Exit(0)
 
-	program := elf.New(a.Bytes(), a.Strings, a.StringPointers)
-	err := program.WriteToFile("program")
+	// Compile and save to file
+	err := elf.New(a).WriteToFile("program")
 
 	if err != nil {
 		log.Fatal(err)
