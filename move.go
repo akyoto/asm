@@ -9,7 +9,7 @@ import (
 )
 
 // MoveRegisterNumber moves a number into the given register.
-func (a *Assembler) MoveRegisterNumber(registerNameTo string, number interface{}) {
+func (a *Assembler) MoveRegisterNumber(registerNameTo string, number uint64) uint32 {
 	baseCode := byte(0xb8)
 	registerTo, exists := registers[registerNameTo]
 
@@ -26,41 +26,15 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, number interface{}
 	}
 
 	operandBitSize := 0
-	numberConverted := uint64(0)
-	isString := false
-
-	switch value := number.(type) {
-	case string:
-		numberConverted = 0
-		isString = true
-
-	case int64:
-		numberConverted = uint64(value)
-
-	case int:
-		numberConverted = uint64(value)
-
-	case int32:
-		numberConverted = uint64(value)
-
-	case int16:
-		numberConverted = uint64(value)
-
-	case byte:
-		numberConverted = uint64(value)
-
-	default:
-		log.Fatalf("Unsupported type: %v", value)
-	}
 
 	switch {
-	case numberConverted <= math.MaxUint8:
+	case number <= math.MaxUint8:
 		operandBitSize = 8
 
-	case numberConverted <= math.MaxUint16:
+	case number <= math.MaxUint16:
 		operandBitSize = 16
 
-	case numberConverted <= math.MaxUint32:
+	case number <= math.MaxUint32:
 		operandBitSize = 32
 
 	default:
@@ -100,11 +74,7 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, number interface{}
 
 	// Base code
 	a.WriteBytes(baseCode + registerTo.BaseCodeOffset%8)
-
-	// Add string address after the instruction code
-	if isString {
-		numberConverted = uint64(a.AddString(number.(string)))
-	}
+	addressPosition := a.Len()
 
 	// Number
 	var buffer []byte
@@ -112,21 +82,22 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, number interface{}
 	switch bitSize {
 	case 64:
 		buffer = make([]byte, 8)
-		binary.LittleEndian.PutUint64(buffer, numberConverted)
+		binary.LittleEndian.PutUint64(buffer, number)
 
 	case 32:
 		buffer = make([]byte, 4)
-		binary.LittleEndian.PutUint32(buffer, uint32(numberConverted))
+		binary.LittleEndian.PutUint32(buffer, uint32(number))
 
 	case 16:
 		buffer = make([]byte, 2)
-		binary.LittleEndian.PutUint16(buffer, uint16(numberConverted))
+		binary.LittleEndian.PutUint16(buffer, uint16(number))
 
 	case 8:
-		buffer = []byte{byte(numberConverted)}
+		buffer = []byte{byte(number)}
 	}
 
 	_, _ = a.Write(buffer)
+	return addressPosition
 }
 
 // MoveRegisterRegister moves a register value into another register.
