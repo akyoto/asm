@@ -63,7 +63,3 @@ func (a *Assembler) Bytes() []byte {
 
 	return a.code
 }
-
-func (a *Assembler) Reset() {
-	a.code = a.code[:0]
-}

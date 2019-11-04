@@ -1,19 +1,17 @@
 package sections
 
-import "bytes"
-
 type Address = uint32
 
 // Strings does string interning and stores the position for each inserted string.
 type Strings struct {
 	addresses map[string]Address
-	raw       bytes.Buffer
+	raw       []byte
 }
 
 // NewStrings creates a new string section.
 func NewStrings() *Strings {
 	return &Strings{
-		addresses: make(map[string]Address),
+		addresses: map[string]Address{},
 	}
 }
 
@@ -25,17 +23,17 @@ func (section *Strings) Add(text string) Address {
 		return position
 	}
 
-	position = Address(section.raw.Len())
+	position = Address(len(section.raw))
 	section.addresses[text] = position
-	section.raw.WriteString(text)
-	section.raw.WriteByte(0)
+	section.raw = append(section.raw, text...)
+	section.raw = append(section.raw, 0)
 	return position
 }
 
 // Bytes returns the entire buffer including all strings
 // in the order they were added.
 func (section *Strings) Bytes() []byte {
-	return section.raw.Bytes()
+	return section.raw
 }
 
 // Count returns the number of added strings.
