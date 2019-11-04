@@ -8,22 +8,26 @@ import (
 )
 
 type Assembler struct {
-	code                []byte
+	EnableOptimizer     bool
+	Labels              map[string]sections.Address
 	Strings             *sections.Strings
 	StringPointers      []sections.Pointer
-	Labels              map[string]sections.Address
+	code                []byte
 	undefinedCallLabels map[string][]sections.Address
-	EnableOptimizer     bool
 }
 
 func New() *Assembler {
-	return &Assembler{
-		code:                make([]byte, 0, 1024),
-		Strings:             sections.NewStrings(),
-		Labels:              map[string]sections.Address{},
-		undefinedCallLabels: map[string][]sections.Address{},
-		EnableOptimizer:     true,
-	}
+	a := &Assembler{}
+	a.Reset()
+	return a
+}
+
+func (a *Assembler) Reset() {
+	a.EnableOptimizer = true
+	a.Strings = sections.NewStrings()
+	a.Labels = map[string]sections.Address{}
+	a.code = a.code[:0]
+	a.undefinedCallLabels = map[string][]sections.Address{}
 }
 
 func (a *Assembler) AddString(msg string) sections.Address {
