@@ -18,6 +18,7 @@ type Assembler struct {
 
 func New() *Assembler {
 	return &Assembler{
+		code:                make([]byte, 0, 1024),
 		Strings:             sections.NewStrings(),
 		Labels:              map[string]sections.Address{},
 		undefinedCallLabels: map[string][]sections.Address{},
@@ -61,4 +62,8 @@ func (a *Assembler) Bytes() []byte {
 	}
 
 	return a.code
+}
+
+func (a *Assembler) Reset() {
+	a.code = a.code[:0]
 }
