@@ -1,6 +1,7 @@
 package asm
 
 import (
+	"encoding/binary"
 	"fmt"
 	"log"
 
@@ -20,6 +21,52 @@ func New() *Assembler {
 	a := &Assembler{}
 	a.Reset()
 	return a
+}
+
+func (a *Assembler) Merge(b *Assembler) {
+	offset := a.Len()
+
+	// Add code
+	a.code = append(a.code, b.code...)
+
+	// Add labels
+	for name, address := range b.Labels {
+		a.AddLabelAt(name, offset+address)
+	}
+
+	// Add strings
+	sectionOffset := a.Strings.Len()
+	a.Strings.Merge(b.Strings)
+
+	for _, pointer := range b.StringPointers {
+		newPointer := sections.Pointer{
+			Address:  sectionOffset + pointer.Address,
+			Position: offset + pointer.Position,
+		}
+
+		slice := a.code[newPointer.Position : newPointer.Position+4]
+		binary.LittleEndian.PutUint32(slice, newPointer.Address)
+		a.StringPointers = append(a.StringPointers, newPointer)
+	}
+
+	// Copy the undefined label only if "a" does not have the label
+	for name, addressList := range b.undefinedCallLabels {
+		address, exists := a.Labels[name]
+
+		if exists {
+			for _, position := range addressList {
+				position += offset
+				slice := a.code[position : position+4]
+				binary.LittleEndian.PutUint32(slice, address-(position+4))
+			}
+		} else {
+			for index := range addressList {
+				addressList[index] += offset
+			}
+
+			a.undefinedCallLabels[name] = addressList
+		}
+	}
 }
 
 func (a *Assembler) Reset() {

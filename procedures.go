@@ -4,9 +4,13 @@ import (
 	"encoding/binary"
 )
 
-// AddLabel adds a label for the current instruction address.
+// AddLabelAt adds a label for the current instruction address.
 func (a *Assembler) AddLabel(name string) {
-	address := a.Len()
+	a.AddLabelAt(name, a.Len())
+}
+
+// AddLabelAt adds a label for the given address.
+func (a *Assembler) AddLabelAt(name string, address uint32) {
 	a.Labels[name] = address
 
 	// Fix all references to previously undefined labels

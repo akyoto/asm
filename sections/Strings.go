@@ -4,8 +4,8 @@ type Address = uint32
 
 // Strings does string interning and stores the position for each inserted string.
 type Strings struct {
-	addresses map[string]Address
 	raw       []byte
+	addresses map[string]Address
 }
 
 // NewStrings creates a new string section.
@@ -39,4 +39,19 @@ func (section *Strings) Bytes() []byte {
 // Count returns the number of added strings.
 func (section *Strings) Count() int {
 	return len(section.addresses)
+}
+
+// Len returns the number of raw bytes added.
+func (section *Strings) Len() uint32 {
+	return uint32(len(section.raw))
+}
+
+// Merge adds all the strings from another string section.
+func (section *Strings) Merge(b *Strings) {
+	offset := section.Len()
+	section.raw = append(section.raw, b.raw...)
+
+	for text, address := range b.addresses {
+		section.addresses[text] = offset + address
+	}
 }
