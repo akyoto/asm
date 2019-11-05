@@ -25,6 +25,7 @@ func New() *Assembler {
 func (a *Assembler) Reset() {
 	a.EnableOptimizer = true
 	a.Strings = sections.NewStrings()
+	a.StringPointers = a.StringPointers[:0]
 	a.Labels = map[string]sections.Address{}
 	a.code = a.code[:0]
 	a.undefinedCallLabels = map[string][]sections.Address{}
