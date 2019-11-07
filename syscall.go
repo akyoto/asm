@@ -1,7 +1,6 @@
 package asm
 
 import (
-	"github.com/akyoto/asm/sections"
 	"github.com/akyoto/asm/syscall"
 )
 
@@ -11,13 +10,7 @@ func (a *Assembler) Print(msg string) {
 
 	a.MoveRegisterNumber(syscall.Registers[0], uint64(syscall.Write))
 	a.MoveRegisterNumber(syscall.Registers[1], 1)
-	addressPosition := a.MoveRegisterNumber(syscall.Registers[2], uint64(address))
-
-	a.StringPointers = append(a.StringPointers, sections.Pointer{
-		Address:  address,
-		Position: addressPosition,
-	})
-
+	a.MoveRegisterAddress(syscall.Registers[2], address)
 	a.MoveRegisterNumber(syscall.Registers[3], uint64(len(msg)))
 	a.WriteBytes(0x0f, 0x05)
 }
@@ -40,13 +33,7 @@ func (a *Assembler) Open(fileName string) {
 
 	a.MoveRegisterNumber(syscall.Registers[0], uint64(syscall.Open))
 	a.MoveRegisterNumber(syscall.Registers[1], 2)
-	addressPosition := a.MoveRegisterNumber(syscall.Registers[2], uint64(address))
-
-	a.StringPointers = append(a.StringPointers, sections.Pointer{
-		Address:  address,
-		Position: addressPosition,
-	})
-
+	a.MoveRegisterAddress(syscall.Registers[2], address)
 	a.MoveRegisterNumber(syscall.Registers[3], uint64(0102))
 	a.MoveRegisterNumber(syscall.Registers[4], uint64(0666))
 	a.WriteBytes(0x0f, 0x05)
