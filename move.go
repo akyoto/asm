@@ -6,7 +6,18 @@ import (
 	"math"
 
 	"github.com/akyoto/asm/opcode"
+	"github.com/akyoto/asm/sections"
 )
+
+// MoveRegisterAddress moves an address into the given register.
+func (a *Assembler) MoveRegisterAddress(registerNameTo string, address uint32) {
+	addressPosition := a.MoveRegisterNumber(registerNameTo, uint64(address))
+
+	a.StringPointers = append(a.StringPointers, sections.Pointer{
+		Address:  address,
+		Position: addressPosition,
+	})
+}
 
 // MoveRegisterNumber moves a number into the given register.
 func (a *Assembler) MoveRegisterNumber(registerNameTo string, number uint64) uint32 {
