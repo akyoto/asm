@@ -12,6 +12,7 @@ func TestHelloWorld(t *testing.T) {
 	a.Println("Hello World")
 	a.Exit(0)
 
+	assert.Nil(t, a.Verify())
 	assert.NotNil(t, a.Bytes())
 	assert.Equal(t, a.Strings.Count(), 1)
 }
@@ -33,6 +34,7 @@ func TestProcedures(t *testing.T) {
 	a.AddLabel("exit")
 	a.Exit(0)
 
+	assert.Nil(t, a.Verify())
 	assert.NotNil(t, a.Bytes())
 	assert.Equal(t, a.Strings.Count(), 2)
 	assert.Equal(t, len(a.Labels), 3)
@@ -41,5 +43,6 @@ func TestProcedures(t *testing.T) {
 func TestExit(t *testing.T) {
 	a := asm.New()
 	a.Exit(0)
+	assert.Nil(t, a.Verify())
 	assert.DeepEqual(t, a.Bytes(), []byte{0xb8, 0x3c, 0x00, 0x00, 0x00, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x05})
 }

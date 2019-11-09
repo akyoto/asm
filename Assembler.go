@@ -3,7 +3,6 @@ package asm
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
 
 	"github.com/akyoto/asm/sections"
 )
@@ -102,16 +101,20 @@ func (a *Assembler) Len() uint32 {
 	return uint32(len(a.code))
 }
 
-func (a *Assembler) Bytes() []byte {
-	if len(a.undefinedCallLabels) > 0 {
-		errorMessage := ""
-
-		for label := range a.undefinedCallLabels {
-			errorMessage += fmt.Sprintf("Undefined label: %s\n", label)
-		}
-
-		log.Fatal(errorMessage)
+func (a *Assembler) Verify() []error {
+	if len(a.undefinedCallLabels) == 0 {
+		return nil
 	}
 
+	errors := make([]error, 0, len(a.undefinedCallLabels))
+
+	for label := range a.undefinedCallLabels {
+		errors = append(errors, fmt.Errorf("Undefined label: %s", label))
+	}
+
+	return errors
+}
+
+func (a *Assembler) Bytes() []byte {
 	return a.code
 }
