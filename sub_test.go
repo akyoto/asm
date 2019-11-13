@@ -157,6 +157,10 @@ func TestSubRegisterRegister(t *testing.T) {
 		{"r15d", "r15d", []byte{0x45, 0x29, 0xff}},
 		{"r15w", "r15w", []byte{0x66, 0x45, 0x29, 0xff}},
 		{"r15b", "r15b", []byte{0x45, 0x28, 0xff}},
+
+		// Test the order
+		{"rax", "rcx", []byte{0x48, 0x29, 0xc8}},
+		{"rcx", "rax", []byte{0x48, 0x29, 0xc1}},
 	}
 
 	for _, pattern := range usagePatterns {
