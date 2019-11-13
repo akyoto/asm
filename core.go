@@ -100,7 +100,7 @@ func (a *Assembler) numberToRegister(baseCode byte, oneByteCode byte, registerNa
 }
 
 // numberToRegisterSimple encodes an instruction with a register and a number parameter.
-func (a *Assembler) numberToRegisterSimple(baseCode byte, oneByteCode byte, alCode byte, reg byte, registerNameTo string, number uint64) {
+func (a *Assembler) numberToRegisterSimple(baseCode byte, oneByteCode byte, alCode byte, reg byte, regEqualsRM bool, registerNameTo string, number uint64) {
 	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
@@ -130,6 +130,12 @@ func (a *Assembler) numberToRegisterSimple(baseCode byte, oneByteCode byte, alCo
 		w = 1
 	}
 
+	r := byte(0)
+
+	if regEqualsRM && registerTo.BaseCodeOffset >= 8 {
+		r = 1
+	}
+
 	// Are we accessing any of the 64-bit only registers (r8 up to r15)?
 	b := byte(0)
 
@@ -139,11 +145,16 @@ func (a *Assembler) numberToRegisterSimple(baseCode byte, oneByteCode byte, alCo
 
 	// REX
 	if w != 0 || b != 0 || registerTo.MustHaveREX {
-		a.WriteBytes(opcode.REX(w, 0, 0, b))
+		a.WriteBytes(opcode.REX(w, r, 0, b))
 	}
 
 	// Base code
 	a.WriteBytes(baseCode)
+
+	if regEqualsRM {
+		reg = registerTo.BaseCodeOffset % 8
+	}
+
 	a.WriteBytes(opcode.ModRM(0b11, reg, registerTo.BaseCodeOffset%8))
 
 	// Number
@@ -200,5 +211,4 @@ func (a *Assembler) registerToRegister(baseCode []byte, oneByteCode []byte, regi
 	} else {
 		a.WriteBytes(opcode.ModRM(0b11, registerFrom.BaseCodeOffset%8, registerTo.BaseCodeOffset%8))
 	}
-
 }

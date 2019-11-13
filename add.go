@@ -2,7 +2,7 @@ package asm
 
 // AddRegisterNumber adds a number to the given register.
 func (a *Assembler) AddRegisterNumber(registerNameTo string, number uint64) {
-	a.numberToRegisterSimple(0x83, 0x80, 0x04, 0, registerNameTo, number)
+	a.numberToRegisterSimple(0x83, 0x80, 0x04, 0, false, registerNameTo, number)
 }
 
 // AddRegisterRegister adds a register value into another register.
