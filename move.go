@@ -21,5 +21,5 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, number uint64) uin
 
 // MoveRegisterRegister moves a register value into another register.
 func (a *Assembler) MoveRegisterRegister(registerNameTo string, registerNameFrom string) {
-	a.registerToRegister(0x89, 0x88, registerNameTo, registerNameFrom)
+	a.registerToRegister([]byte{0x89}, []byte{0x88}, registerNameTo, registerNameFrom)
 }

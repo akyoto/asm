@@ -153,7 +153,7 @@ func (a *Assembler) numberToRegisterSimple(baseCode byte, oneByteCode byte, alCo
 
 // registerToRegister encodes an instruction that takes two register parameters.
 // baseCode is used for most cases except for single-byte register where oneByteCode is used.
-func (a *Assembler) registerToRegister(baseCode byte, oneByteCode byte, registerNameTo string, registerNameFrom string) {
+func (a *Assembler) registerToRegister(baseCode []byte, oneByteCode []byte, registerNameTo string, registerNameFrom string) {
 	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
@@ -193,6 +193,6 @@ func (a *Assembler) registerToRegister(baseCode byte, oneByteCode byte, register
 		a.WriteBytes(opcode.REX(w, r, 0, b))
 	}
 
-	a.WriteBytes(baseCode)
+	_, _ = a.Write(baseCode)
 	a.WriteBytes(opcode.ModRM(0b11, registerFrom.BaseCodeOffset%8, registerTo.BaseCodeOffset%8))
 }

@@ -7,5 +7,5 @@ func (a *Assembler) AddRegisterNumber(registerNameTo string, number uint64) {
 
 // AddRegisterRegister adds a register value into another register.
 func (a *Assembler) AddRegisterRegister(registerNameTo string, registerNameFrom string) {
-	a.registerToRegister(0x01, 0x00, registerNameTo, registerNameFrom)
+	a.registerToRegister([]byte{0x01}, []byte{0x00}, registerNameTo, registerNameFrom)
 }
