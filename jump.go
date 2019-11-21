@@ -2,6 +2,7 @@ package asm
 
 import (
 	"encoding/binary"
+	"math"
 )
 
 // AddLabelAt adds a label for the current instruction address.
@@ -53,19 +54,28 @@ func (a *Assembler) Call(label string) {
 // Jump continues program flow at the new address.
 // The address is relative to the next instruction.
 func (a *Assembler) Jump(label string) {
-	// TODO: Make this work for any type of jump (currently 1-byte only).
-	a.WriteBytes(0xeb)
 	pointerPosition := a.Len()
 	absoluteAddress, exists := a.Labels[label]
 
 	if !exists {
-		a.undefinedJumpLabels[label] = append(a.undefinedJumpLabels[label], jumpPointer{pointerPosition, 1})
-		a.WriteBytes(0)
+		a.WriteBytes(0xe9)
+		a.undefinedJumpLabels[label] = append(a.undefinedJumpLabels[label], jumpPointer{pointerPosition, 4})
+		a.WriteBytes(0, 0, 0, 0)
 		return
 	}
 
-	relativeAddress := int8(absoluteAddress - (pointerPosition + 1))
-	_ = binary.Write(a, binary.LittleEndian, relativeAddress)
+	offset := int32(absoluteAddress - (pointerPosition + 1))
+
+	// 32-bit jump
+	if offset < math.MinInt8 || offset > math.MaxInt8 {
+		a.WriteBytes(0xe9)
+		_ = binary.Write(a, binary.LittleEndian, offset)
+		return
+	}
+
+	// 8-bit jump
+	a.WriteBytes(0xeb)
+	a.WriteBytes(byte(offset))
 }
 
 // Return transfers program control to a return address located on the top of the stack.
