@@ -54,7 +54,7 @@ func (a *Assembler) Call(label string) {
 // Jump continues program flow at the new address.
 // The address is relative to the next instruction.
 func (a *Assembler) Jump(label string) {
-	pointerPosition := a.Len()
+	pointerPosition := a.Len() + 1
 	absoluteAddress, exists := a.Labels[label]
 
 	if !exists {
