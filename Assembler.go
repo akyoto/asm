@@ -13,7 +13,7 @@ type Assembler struct {
 	Strings             *sections.Strings
 	StringPointers      []sections.Pointer
 	code                []byte
-	undefinedCallLabels map[string][]sections.Address
+	undefinedJumpLabels map[string][]jumpPointer
 }
 
 func New() *Assembler {
@@ -49,21 +49,21 @@ func (a *Assembler) Merge(b *Assembler) {
 	}
 
 	// Copy the undefined label only if "a" does not have the label
-	for name, addressList := range b.undefinedCallLabels {
+	for name, pointerList := range b.undefinedJumpLabels {
 		address, exists := a.Labels[name]
 
 		if exists {
-			for _, position := range addressList {
-				position += offset
-				slice := a.code[position : position+4]
-				binary.LittleEndian.PutUint32(slice, address-(position+4))
+			for _, pointer := range pointerList {
+				pointer.Position += offset
+				slice := a.code[pointer.Position : pointer.Position+uint32(pointer.Size)]
+				binary.LittleEndian.PutUint32(slice, address-(pointer.Position+uint32(pointer.Size)))
 			}
 		} else {
-			for index := range addressList {
-				addressList[index] += offset
+			for index := range pointerList {
+				pointerList[index].Position += offset
 			}
 
-			a.undefinedCallLabels[name] = addressList
+			a.undefinedJumpLabels[name] = pointerList
 		}
 	}
 }
@@ -74,7 +74,7 @@ func (a *Assembler) Reset() {
 	a.StringPointers = a.StringPointers[:0]
 	a.Labels = map[string]sections.Address{}
 	a.code = a.code[:0]
-	a.undefinedCallLabels = map[string][]sections.Address{}
+	a.undefinedJumpLabels = map[string][]jumpPointer{}
 }
 
 func (a *Assembler) AddString(msg string) sections.Address {
@@ -102,13 +102,13 @@ func (a *Assembler) Len() uint32 {
 }
 
 func (a *Assembler) Verify() []error {
-	if len(a.undefinedCallLabels) == 0 {
+	if len(a.undefinedJumpLabels) == 0 {
 		return nil
 	}
 
-	errors := make([]error, 0, len(a.undefinedCallLabels))
+	errors := make([]error, 0, len(a.undefinedJumpLabels))
 
-	for label := range a.undefinedCallLabels {
+	for label := range a.undefinedJumpLabels {
 		errors = append(errors, fmt.Errorf("Undefined label: %s", label))
 	}
 

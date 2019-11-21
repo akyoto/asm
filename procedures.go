@@ -14,12 +14,23 @@ func (a *Assembler) AddLabelAt(name string, address uint32) {
 	a.Labels[name] = address
 
 	// Fix all references to previously undefined labels
-	for _, position := range a.undefinedCallLabels[name] {
-		slice := a.code[position : position+4]
-		binary.LittleEndian.PutUint32(slice, address-(position+4))
+	for _, pointer := range a.undefinedJumpLabels[name] {
+		slice := a.code[pointer.Position : pointer.Position+uint32(pointer.Size)]
+		offset := address - (pointer.Position + uint32(pointer.Size))
+
+		switch pointer.Size {
+		case 4:
+			binary.LittleEndian.PutUint32(slice, offset)
+
+		case 2:
+			binary.LittleEndian.PutUint16(slice, uint16(offset))
+
+		case 1:
+			slice[0] = byte(offset)
+		}
 	}
 
-	delete(a.undefinedCallLabels, name)
+	delete(a.undefinedJumpLabels, name)
 }
 
 // Call places the return address on the top of the stack and continues
@@ -30,12 +41,30 @@ func (a *Assembler) Call(label string) {
 	absoluteAddress, exists := a.Labels[label]
 
 	if !exists {
-		a.undefinedCallLabels[label] = append(a.undefinedCallLabels[label], pointerPosition)
+		a.undefinedJumpLabels[label] = append(a.undefinedJumpLabels[label], jumpPointer{pointerPosition, 4})
 		a.WriteBytes(0, 0, 0, 0)
 		return
 	}
 
-	relativeAddress := absoluteAddress - (pointerPosition + 4)
+	relativeAddress := int32(absoluteAddress - (pointerPosition + 4))
+	_ = binary.Write(a, binary.LittleEndian, relativeAddress)
+}
+
+// Jump continues program flow at the new address.
+// The address is relative to the next instruction.
+func (a *Assembler) Jump(label string) {
+	// TODO: Make this work for any type of jump (currently 1-byte only).
+	a.WriteBytes(0xeb)
+	pointerPosition := a.Len()
+	absoluteAddress, exists := a.Labels[label]
+
+	if !exists {
+		a.undefinedJumpLabels[label] = append(a.undefinedJumpLabels[label], jumpPointer{pointerPosition, 1})
+		a.WriteBytes(0)
+		return
+	}
+
+	relativeAddress := int8(absoluteAddress - (pointerPosition + 1))
 	_ = binary.Write(a, binary.LittleEndian, relativeAddress)
 }
 
