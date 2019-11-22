@@ -5,6 +5,25 @@ import (
 	"math"
 )
 
+// Mnemonic        Condition tested      Description
+// ----------------------------------------------------------------------------
+// jo              OF = 1                overflow
+// jno             OF = 0                not overflow
+// jc, jb, jnae    CF = 1                carry / below / not above nor equal
+// jnc, jae, jnb   CF = 0                not carry / above or equal / not below
+// je, jz          ZF = 1                equal / zero
+// jne, jnz        ZF = 0                not equal / not zero
+// jbe, jna        CF or ZF = 1          below or equal / not above
+// ja, jnbe        CF or ZF = 0          above / not below or equal
+// js              SF = 1                sign
+// jns             SF = 0                not sign
+// jp, jpe         PF = 1                parity / parity even
+// jnp, jpo        PF = 0                not parity / parity odd
+// jl, jnge        SF xor OF = 1         less / not greater nor equal
+// jge, jnl        SF xor OF = 0         greater or equal / not less
+// jle, jng        (SF xor OF) or ZF = 1 less or equal / not greater
+// jg, jnle        (SF xor OF) or ZF = 0 greater / not less nor equal
+
 // AddLabelAt adds a label for the current instruction address.
 func (a *Assembler) AddLabel(name string) {
 	a.AddLabelAt(name, a.Len())
@@ -54,27 +73,41 @@ func (a *Assembler) Call(label string) {
 // Jump continues program flow at the new address.
 // The address is relative to the next instruction.
 func (a *Assembler) Jump(label string) {
-	pointerPosition := a.Len() + 1
+	a.jump(0xeb, []byte{0xe9}, label)
+}
+
+// JumpIfLess jumps if the result was less.
+func (a *Assembler) JumpIfLess(label string) {
+	a.jump(0x7c, []byte{0x0f, 0x8c}, label)
+}
+
+// jump implements program flow jumps.
+func (a *Assembler) jump(shortCode byte, nearCode []byte, label string) {
+	instructionPosition := a.Len()
+	pointerPosition := instructionPosition + 1
+	pointerSize := uint8(1)
 	absoluteAddress, exists := a.Labels[label]
 
 	if !exists {
-		a.WriteBytes(0xe9)
-		a.undefinedJumpLabels[label] = append(a.undefinedJumpLabels[label], jumpPointer{pointerPosition, 4})
-		a.WriteBytes(0, 0, 0, 0)
+		// TODO: Support 32-bit jumps for unknown labels
+		pointer := jumpPointer{pointerPosition, pointerSize}
+		a.undefinedJumpLabels[label] = append(a.undefinedJumpLabels[label], pointer)
+		a.WriteBytes(shortCode)
+		a.WriteBytes(0)
 		return
 	}
 
-	offset := int32(absoluteAddress - (pointerPosition + 1))
+	offset := int32(absoluteAddress - (pointerPosition + uint32(pointerSize)))
 
-	// 32-bit jump
+	// Near jump (32-bit)
 	if offset < math.MinInt8 || offset > math.MaxInt8 {
-		a.WriteBytes(0xe9)
+		a.WriteBytes(nearCode...)
 		_ = binary.Write(a, binary.LittleEndian, offset)
 		return
 	}
 
-	// 8-bit jump
-	a.WriteBytes(0xeb)
+	// Short jump (8-bit)
+	a.WriteBytes(shortCode)
 	a.WriteBytes(byte(offset))
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/akyoto/asm/sections"
 )
 
+// Assembler implements machine-code encoding.
 type Assembler struct {
 	EnableOptimizer     bool
 	Labels              map[string]sections.Address
