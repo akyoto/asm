@@ -151,11 +151,13 @@ func (a *Assembler) numberToRegisterSimple(baseCode byte, oneByteCode byte, alCo
 	// Base code
 	a.WriteBytes(baseCode)
 
+	rm := registerTo.BaseCodeOffset % 8
+
 	if regEqualsRM {
-		reg = registerTo.BaseCodeOffset % 8
+		reg = rm
 	}
 
-	a.WriteBytes(opcode.ModRM(0b11, reg, registerTo.BaseCodeOffset%8))
+	a.WriteBytes(opcode.ModRM(0b11, reg, rm))
 
 	// Number
 	buffer := []byte{byte(number)}
