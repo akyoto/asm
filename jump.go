@@ -81,6 +81,31 @@ func (a *Assembler) JumpIfLess(label string) {
 	a.jump(0x7c, []byte{0x0f, 0x8c}, label)
 }
 
+// JumpIfLessOrEqual jumps if the result was less or equal.
+func (a *Assembler) JumpIfLessOrEqual(label string) {
+	a.jump(0x7e, []byte{0x0f, 0x8e}, label)
+}
+
+// JumpIfGreater jumps if the result was greater.
+func (a *Assembler) JumpIfGreater(label string) {
+	a.jump(0x7f, []byte{0x0f, 0x8f}, label)
+}
+
+// JumpIfGreaterOrEqual jumps if the result was greater or equal.
+func (a *Assembler) JumpIfGreaterOrEqual(label string) {
+	a.jump(0x7d, []byte{0x0f, 0x8d}, label)
+}
+
+// JumpIfEqual jumps if the result was equal.
+func (a *Assembler) JumpIfEqual(label string) {
+	a.jump(0x74, []byte{0x0f, 0x84}, label)
+}
+
+// JumpIfNotEqual jumps if the result was not equal.
+func (a *Assembler) JumpIfNotEqual(label string) {
+	a.jump(0x75, []byte{0x0f, 0x85}, label)
+}
+
 // jump implements program flow jumps.
 func (a *Assembler) jump(shortCode byte, nearCode []byte, label string) {
 	instructionPosition := a.Len()
