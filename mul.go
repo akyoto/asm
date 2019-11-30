@@ -2,7 +2,7 @@ package asm
 
 // MulRegisterNumber multiplies a register with a number.
 func (a *Assembler) MulRegisterNumber(registerNameTo string, number uint64) {
-	a.numberToRegisterSimple(0x6b, 0x6b, 0x6b, 0, true, registerNameTo, number)
+	a.numberToRegister(0x6b, 0x6b, 0, true, true, false, false, registerNameTo, number)
 }
 
 // MulRegisterRegister multiplies a register with another register.

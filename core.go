@@ -1,15 +1,31 @@
 package asm
 
 import (
-	"encoding/binary"
 	"log"
 	"math"
 
 	"github.com/akyoto/asm/opcode"
 )
 
+// bitsNeeded tells you how many bits are needed to encode this number.
+func bitsNeeded(number uint64) int {
+	switch {
+	case number <= math.MaxUint8:
+		return 8
+
+	case number <= math.MaxUint16:
+		return 16
+
+	case number <= math.MaxUint32:
+		return 32
+
+	default:
+		return 64
+	}
+}
+
 // numberToRegister encodes an instruction with a register and a number parameter.
-func (a *Assembler) numberToRegister(baseCode byte, oneByteCode byte, registerNameTo string, number uint64) uint32 {
+func (a *Assembler) numberToRegister(baseCode byte, oneByteCode byte, reg byte, regEqualsRM bool, useNumberSize bool, supports64BitNumber bool, useBaseCodeOffset bool, registerNameTo string, number uint64) uint32 {
 	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
@@ -24,25 +40,10 @@ func (a *Assembler) numberToRegister(baseCode byte, oneByteCode byte, registerNa
 		a.WriteBytes(0x66)
 	}
 
-	operandBitSize := 0
-
-	switch {
-	case number <= math.MaxUint8:
-		operandBitSize = 8
-
-	case number <= math.MaxUint16:
-		operandBitSize = 16
-
-	case number <= math.MaxUint32:
-		operandBitSize = 32
-
-	default:
-		operandBitSize = 64
-	}
-
+	operandBitSize := bitsNeeded(number)
 	registerBitSize := registerTo.BitSize
 
-	if a.EnableOptimizer && registerBitSize == 64 && operandBitSize < 64 {
+	if a.EnableOptimizer && supports64BitNumber && registerBitSize == 64 && operandBitSize < 64 {
 		registerBitSize = 32
 	}
 
@@ -51,77 +52,6 @@ func (a *Assembler) numberToRegister(baseCode byte, oneByteCode byte, registerNa
 	}
 
 	bitSize := registerBitSize
-
-	// 64-bit register
-	w := byte(0)
-
-	if bitSize == 64 {
-		w = 1
-	}
-
-	// Are we accessing any of the 64-bit only registers (r8 up to r15)?
-	b := byte(0)
-
-	if registerTo.BaseCodeOffset >= 8 {
-		b = 1
-	}
-
-	// REX
-	if w != 0 || b != 0 || registerTo.MustHaveREX {
-		a.WriteBytes(opcode.REX(w, 0, 0, b))
-	}
-
-	// Base code
-	a.WriteBytes(baseCode + registerTo.BaseCodeOffset%8)
-	addressPosition := a.Len()
-
-	// Number
-	var buffer []byte
-
-	switch bitSize {
-	case 64:
-		buffer = make([]byte, 8)
-		binary.LittleEndian.PutUint64(buffer, number)
-
-	case 32:
-		buffer = make([]byte, 4)
-		binary.LittleEndian.PutUint32(buffer, uint32(number))
-
-	case 16:
-		buffer = make([]byte, 2)
-		binary.LittleEndian.PutUint16(buffer, uint16(number))
-
-	case 8:
-		buffer = []byte{byte(number)}
-	}
-
-	_, _ = a.Write(buffer)
-	return addressPosition
-}
-
-// numberToRegisterSimple encodes an instruction with a register and a number parameter.
-func (a *Assembler) numberToRegisterSimple(baseCode byte, oneByteCode byte, alCode byte, reg byte, regEqualsRM bool, registerNameTo string, number uint64) {
-	registerTo, exists := registers[registerNameTo]
-
-	if !exists {
-		log.Fatal("Unknown register name: " + registerNameTo)
-	}
-
-	if registerTo.BitSize == 8 {
-		baseCode = oneByteCode
-
-		// AL has a special instruction
-		if registerNameTo == "al" {
-			a.WriteBytes(alCode, byte(number))
-			return
-		}
-	}
-
-	if registerTo.BitSize == 16 {
-		a.WriteBytes(0x66)
-	}
-
-	bitSize := registerTo.BitSize
 
 	// 64-bit register
 	w := byte(0)
@@ -148,20 +78,49 @@ func (a *Assembler) numberToRegisterSimple(baseCode byte, oneByteCode byte, alCo
 		a.WriteBytes(opcode.REX(w, r, 0, b))
 	}
 
+	if useBaseCodeOffset {
+		baseCode += registerTo.BaseCodeOffset % 8
+	}
+
 	// Base code
 	a.WriteBytes(baseCode)
 
-	rm := registerTo.BaseCodeOffset % 8
+	if !useBaseCodeOffset {
+		rm := registerTo.BaseCodeOffset % 8
 
-	if regEqualsRM {
-		reg = rm
+		if regEqualsRM {
+			reg = rm
+		}
+
+		a.WriteBytes(opcode.ModRM(0b11, reg, rm))
 	}
 
-	a.WriteBytes(opcode.ModRM(0b11, reg, rm))
+	if useNumberSize {
+		bitSize = operandBitSize
+	}
+
+	if !supports64BitNumber && bitSize == 64 {
+		bitSize = 32
+	}
+
+	numberPos := a.Len()
 
 	// Number
-	buffer := []byte{byte(number)}
-	_, _ = a.Write(buffer)
+	switch bitSize {
+	case 64:
+		a.WriteUint64(number)
+
+	case 32:
+		a.WriteUint32(uint32(number))
+
+	case 16:
+		a.WriteUint16(uint16(number))
+
+	case 8:
+		a.WriteBytes(byte(number))
+	}
+
+	return numberPos
 }
 
 // registerToRegister encodes an instruction that takes two register parameters.

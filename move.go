@@ -16,7 +16,7 @@ func (a *Assembler) MoveRegisterAddress(registerNameTo string, address uint32) {
 
 // MoveRegisterNumber moves a number into the given register.
 func (a *Assembler) MoveRegisterNumber(registerNameTo string, number uint64) uint32 {
-	return a.numberToRegister(0xb8, 0xb0, registerNameTo, number)
+	return a.numberToRegister(0xb8, 0xb0, 0b000, false, false, true, true, registerNameTo, number)
 }
 
 // MoveRegisterRegister moves a register value into another register.

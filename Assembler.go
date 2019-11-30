@@ -94,6 +94,24 @@ func (a *Assembler) Write(code []byte) (int, error) {
 	return len(code), nil
 }
 
+func (a *Assembler) WriteUint16(number uint16) {
+	code := make([]byte, 2)
+	binary.LittleEndian.PutUint16(code, number)
+	a.code = append(a.code, code...)
+}
+
+func (a *Assembler) WriteUint32(number uint32) {
+	code := make([]byte, 4)
+	binary.LittleEndian.PutUint32(code, number)
+	a.code = append(a.code, code...)
+}
+
+func (a *Assembler) WriteUint64(number uint64) {
+	code := make([]byte, 8)
+	binary.LittleEndian.PutUint64(code, number)
+	a.code = append(a.code, code...)
+}
+
 func (a *Assembler) WriteBytes(someBytes ...byte) {
 	a.code = append(a.code, someBytes...)
 }
