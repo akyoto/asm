@@ -216,7 +216,7 @@ func TestMoveRegisterRegister(t *testing.T) {
 func TestMoveMemoryNumber(t *testing.T) {
 	usagePatterns := []struct {
 		Register  string
-		ByteCount int
+		ByteCount byte
 		Number    int64
 		Code      []byte
 	}{

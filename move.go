@@ -42,7 +42,7 @@ var moveRegisterRegister = registerToRegisterEncoder{
 }
 
 // MoveMemoryNumber moves a number into the memory address included in the given register.
-func (a *Assembler) MoveMemoryNumber(registerNameTo string, byteCount int, number uint64) {
+func (a *Assembler) MoveMemoryNumber(registerNameTo string, byteCount byte, number uint64) {
 	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
