@@ -11,7 +11,7 @@ type numberToRegisterEncoder struct {
 	baseCode            byte
 	oneByteCode         byte
 	reg                 byte
-	regEqualsRM         bool
+	regRMEqual          bool
 	useNumberSize       bool
 	supports64BitNumber bool
 	useBaseCodeOffset   bool
@@ -25,23 +25,25 @@ func (a *Assembler) numberToRegister(encoder *numberToRegisterEncoder, registerN
 		log.Fatal("Unknown register name: " + registerNameTo)
 	}
 
+	// The size of the target register.
+	registerBitSize := registerTo.BitSize
+
 	// We start with the assumption that the base code will be the default.
 	baseCode := encoder.baseCode
 
-	// If the target register is only 8 bits long,
-	// most instructions use a different base code.
-	if registerTo.BitSize == 8 {
+	switch registerBitSize {
+	case 8:
+		// If the target register is only 8 bits long,
+		// most instructions use a different base code.
 		baseCode = encoder.oneByteCode
-	}
 
-	// If the target register is 16 bits long,
-	// the base code is always prefixed with 0x66.
-	if registerTo.BitSize == 16 {
+	case 16:
+		// If the target register is 16 bits long,
+		// the base code is always prefixed with 0x66.
 		a.WriteBytes(0x66)
 	}
 
 	operandBitSize := bitsNeeded(int64(number))
-	registerBitSize := registerTo.BitSize
 
 	// Change 64-bit target registers like "rax" to "eax"
 	// when the number doesn't need the full 64 bits
@@ -51,36 +53,29 @@ func (a *Assembler) numberToRegister(encoder *numberToRegisterEncoder, registerN
 		registerBitSize = 32
 	}
 
+	// Panic on overflows
 	if operandBitSize > registerBitSize {
 		panic(fmt.Errorf("Operand '%v' (%d bits) doesn't fit into register %s (%d bits)", number, operandBitSize, registerNameTo, registerBitSize))
 	}
 
-	// Indicates a 64-bit register.
-	w := byte(0)
+	// REX prefix
+	w := byte(0) // Indicates a 64-bit register.
+	r := byte(0) // Extension to the "reg" field in ModRM.
+	x := byte(0) // Extension to the SIB index field.
+	b := byte(0) // Extension to the "rm" field in ModRM or the SIB base (r8 up to r15 use this).
 
 	if registerBitSize == 64 {
 		w = 1
 	}
 
-	// Extension to the "reg" field in ModRM.
-	r := byte(0)
-
-	if encoder.regEqualsRM && registerTo.BaseCodeOffset >= 8 {
+	if encoder.regRMEqual && registerTo.BaseCodeOffset >= 8 {
 		r = 1
 	}
-
-	// Extension to the SIB index field.
-	x := byte(0)
-
-	// Are we accessing any of the 64-bit only registers (r8 up to r15)?
-	// This is an extension to the "rm" field in ModRM or the SIB base.
-	b := byte(0)
 
 	if registerTo.BaseCodeOffset >= 8 {
 		b = 1
 	}
 
-	// REX
 	if w != 0 || b != 0 || x != 0 || registerTo.MustHaveREX {
 		a.WriteBytes(opcode.REX(w, r, x, b))
 	}
@@ -101,17 +96,20 @@ func (a *Assembler) numberToRegister(encoder *numberToRegisterEncoder, registerN
 		reg := encoder.reg
 		rm := registerTo.BaseCodeOffset % 8
 
-		if encoder.regEqualsRM {
+		if encoder.regRMEqual {
 			reg = rm
 		}
 
 		a.WriteBytes(opcode.ModRM(0b11, reg, rm))
 	}
 
-	bitSize := registerBitSize
+	// Bit size of the immediate value operand
+	bitSize := 0
 
 	if encoder.useNumberSize {
 		bitSize = operandBitSize
+	} else {
+		bitSize = registerBitSize
 	}
 
 	// If the number needs 64 bit but the instruction doesn't

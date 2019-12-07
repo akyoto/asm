@@ -1,25 +1,5 @@
 package asm
 
-var compareRegisterNumber = numberToRegisterEncoder{
-	baseCode:            0x81,
-	oneByteCode:         0x80,
-	reg:                 0b111,
-	regEqualsRM:         false,
-	useNumberSize:       false,
-	supports64BitNumber: false,
-	useBaseCodeOffset:   false,
-}
-
-var compareRegisterNumber1B = numberToRegisterEncoder{
-	baseCode:            0x83,
-	oneByteCode:         compareRegisterNumber.oneByteCode,
-	reg:                 compareRegisterNumber.reg,
-	regEqualsRM:         compareRegisterNumber.regEqualsRM,
-	useNumberSize:       true,
-	supports64BitNumber: compareRegisterNumber.supports64BitNumber,
-	useBaseCodeOffset:   compareRegisterNumber.useBaseCodeOffset,
-}
-
 // CompareRegisterNumber compares a register with a number.
 func (a *Assembler) CompareRegisterNumber(registerName string, number uint64) {
 	if registerName == "al" {
@@ -56,7 +36,30 @@ func (a *Assembler) CompareRegisterNumber(registerName string, number uint64) {
 	a.numberToRegister(encoder, registerName, number)
 }
 
+var compareRegisterNumber = numberToRegisterEncoder{
+	baseCode:            0x81,
+	oneByteCode:         0x80,
+	reg:                 0b111,
+	useNumberSize:       false,
+	supports64BitNumber: false,
+	useBaseCodeOffset:   false,
+}
+
+var compareRegisterNumber1B = numberToRegisterEncoder{
+	baseCode:            0x83,
+	oneByteCode:         compareRegisterNumber.oneByteCode,
+	reg:                 compareRegisterNumber.reg,
+	useNumberSize:       true,
+	supports64BitNumber: compareRegisterNumber.supports64BitNumber,
+	useBaseCodeOffset:   compareRegisterNumber.useBaseCodeOffset,
+}
+
 // CompareRegisterRegister compares a register with a register.
 func (a *Assembler) CompareRegisterRegister(registerNameA string, registerNameB string) {
-	a.registerToRegister([]byte{0x39}, []byte{0x38}, registerNameA, registerNameB, false)
+	a.registerToRegister(&compareRegisterRegister, registerNameA, registerNameB)
+}
+
+var compareRegisterRegister = registerToRegisterEncoder{
+	baseCode:    []byte{0x39},
+	oneByteCode: []byte{0x38},
 }

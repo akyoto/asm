@@ -4,16 +4,6 @@ import (
 	"github.com/akyoto/asm/sections"
 )
 
-var moveRegisterNumber = numberToRegisterEncoder{
-	baseCode:            0xb8,
-	oneByteCode:         0xb0,
-	reg:                 0b000,
-	regEqualsRM:         false,
-	useNumberSize:       false,
-	supports64BitNumber: true,
-	useBaseCodeOffset:   true,
-}
-
 // MoveRegisterAddress moves an address into the given register.
 func (a *Assembler) MoveRegisterAddress(registerNameTo string, address uint32) {
 	addressPosition := a.MoveRegisterNumber(registerNameTo, uint64(address))
@@ -29,7 +19,21 @@ func (a *Assembler) MoveRegisterNumber(registerNameTo string, number uint64) uin
 	return a.numberToRegister(&moveRegisterNumber, registerNameTo, number)
 }
 
+var moveRegisterNumber = numberToRegisterEncoder{
+	baseCode:            0xb8,
+	oneByteCode:         0xb0,
+	reg:                 0b000,
+	useNumberSize:       false,
+	supports64BitNumber: true,
+	useBaseCodeOffset:   true,
+}
+
 // MoveRegisterRegister moves a register value into another register.
 func (a *Assembler) MoveRegisterRegister(registerNameTo string, registerNameFrom string) {
-	a.registerToRegister([]byte{0x89}, []byte{0x88}, registerNameTo, registerNameFrom, false)
+	a.registerToRegister(&moveRegisterRegister, registerNameTo, registerNameFrom)
+}
+
+var moveRegisterRegister = registerToRegisterEncoder{
+	baseCode:    []byte{0x89},
+	oneByteCode: []byte{0x88},
 }

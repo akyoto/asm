@@ -13,8 +13,8 @@ func NewRaw() *Raw {
 }
 
 // Add adds a byte slice to the section.
-func (section *Raw) Add(data []byte) int64 {
-	position := int64(section.raw.Len())
+func (section *Raw) Add(data []byte) Address {
+	position := Address(section.raw.Len())
 	section.raw.Write(data)
 	return position
 }
