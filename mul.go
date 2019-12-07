@@ -1,8 +1,18 @@
 package asm
 
+var mulRegisterNumber = numberToRegisterEncoder{
+	baseCode:            0x6b,
+	oneByteCode:         0x6b,
+	reg:                 0b000,
+	regEqualsRM:         true,
+	useNumberSize:       true,
+	supports64BitNumber: false,
+	useBaseCodeOffset:   false,
+}
+
 // MulRegisterNumber multiplies a register with a number.
 func (a *Assembler) MulRegisterNumber(registerNameTo string, number uint64) {
-	a.numberToRegister(0x6b, 0x6b, 0, true, true, false, false, registerNameTo, number)
+	a.numberToRegister(&mulRegisterNumber, registerNameTo, number)
 }
 
 // MulRegisterRegister multiplies a register with another register.

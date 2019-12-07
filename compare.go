@@ -1,5 +1,25 @@
 package asm
 
+var compareRegisterNumber = numberToRegisterEncoder{
+	baseCode:            0x81,
+	oneByteCode:         0x80,
+	reg:                 0b111,
+	regEqualsRM:         false,
+	useNumberSize:       false,
+	supports64BitNumber: false,
+	useBaseCodeOffset:   false,
+}
+
+var compareRegisterNumber1B = numberToRegisterEncoder{
+	baseCode:            0x83,
+	oneByteCode:         compareRegisterNumber.oneByteCode,
+	reg:                 compareRegisterNumber.reg,
+	regEqualsRM:         compareRegisterNumber.regEqualsRM,
+	useNumberSize:       true,
+	supports64BitNumber: compareRegisterNumber.supports64BitNumber,
+	useBaseCodeOffset:   compareRegisterNumber.useBaseCodeOffset,
+}
+
 // CompareRegisterNumber compares a register with a number.
 func (a *Assembler) CompareRegisterNumber(registerName string, number uint64) {
 	if registerName == "al" {
@@ -7,7 +27,7 @@ func (a *Assembler) CompareRegisterNumber(registerName string, number uint64) {
 		return
 	}
 
-	operandBitSize := bitsNeeded(number)
+	operandBitSize := bitsNeeded(int64(number))
 
 	if registerName == "rax" && operandBitSize >= 16 && operandBitSize <= 32 {
 		a.WriteBytes(0x48, 0x3d)
@@ -27,15 +47,13 @@ func (a *Assembler) CompareRegisterNumber(registerName string, number uint64) {
 		return
 	}
 
-	baseCode := byte(0x81)
-	useNumberSize := false
+	encoder := &compareRegisterNumber
 
-	if bitsNeeded(number) == 8 {
-		baseCode = 0x83
-		useNumberSize = true
+	if operandBitSize == 8 {
+		encoder = &compareRegisterNumber1B
 	}
 
-	a.numberToRegister(baseCode, 0x80, 0b111, false, useNumberSize, false, false, registerName, number)
+	a.numberToRegister(encoder, registerName, number)
 }
 
 // CompareRegisterRegister compares a register with a register.

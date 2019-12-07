@@ -1,5 +1,15 @@
 package asm
 
+var addRegisterNumber = numberToRegisterEncoder{
+	baseCode:            0x83,
+	oneByteCode:         0x80,
+	reg:                 0b000,
+	regEqualsRM:         false,
+	useNumberSize:       true,
+	supports64BitNumber: false,
+	useBaseCodeOffset:   false,
+}
+
 // AddRegisterNumber adds a number to the given register.
 func (a *Assembler) AddRegisterNumber(registerNameTo string, number uint64) {
 	if registerNameTo == "al" {
@@ -7,7 +17,7 @@ func (a *Assembler) AddRegisterNumber(registerNameTo string, number uint64) {
 		return
 	}
 
-	a.numberToRegister(0x83, 0x80, 0, false, true, false, false, registerNameTo, number)
+	a.numberToRegister(&addRegisterNumber, registerNameTo, number)
 }
 
 // AddRegisterRegister adds a register value into another register.

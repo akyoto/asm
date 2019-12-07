@@ -1,5 +1,15 @@
 package asm
 
+var subRegisterNumber = numberToRegisterEncoder{
+	baseCode:            0x83,
+	oneByteCode:         0x80,
+	reg:                 0b101,
+	regEqualsRM:         false,
+	useNumberSize:       true,
+	supports64BitNumber: false,
+	useBaseCodeOffset:   false,
+}
+
 // SubRegisterNumber subtracts a number from a register.
 func (a *Assembler) SubRegisterNumber(registerNameTo string, number uint64) {
 	if registerNameTo == "al" {
@@ -7,7 +17,7 @@ func (a *Assembler) SubRegisterNumber(registerNameTo string, number uint64) {
 		return
 	}
 
-	a.numberToRegister(0x83, 0x80, 0b101, false, true, false, false, registerNameTo, number)
+	a.numberToRegister(&subRegisterNumber, registerNameTo, number)
 }
 
 // SubRegisterRegister subtracts a register value from another register.
