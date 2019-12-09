@@ -6,7 +6,7 @@
 [![Coverage][coverage-image]][coverage-url]
 [![Sponsor][sponsor-image]][sponsor-url]
 
-An x86-64 assembler written in Go.
+An x86-64 assembler written in Go. It is used by the [Q programming language](https://github.com/akyoto/q) for machine code generation.
 
 ## Architectures
 
