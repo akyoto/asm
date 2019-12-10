@@ -1,7 +1,7 @@
 package syscall
 
 const (
-	Read int32 = iota
+	Read = iota
 	Write
 	Open
 	Close
