@@ -27,9 +27,11 @@ func (a *Assembler) registerToRegister(encoder *registerToRegisterEncoder, regis
 		log.Fatal("Unknown register name: " + registerNameFrom)
 	}
 
-	w := byte(0)
-	r := byte(0)
-	b := byte(0)
+	// REX prefix
+	w := byte(0) // Indicates a 64-bit register.
+	r := byte(0) // Extension to the "reg" field in ModRM.
+	x := byte(0) // Extension to the SIB index field.
+	b := byte(0) // Extension to the "rm" field in ModRM or the SIB base (r8 up to r15 use this).
 
 	if registerFrom.BaseCodeOffset >= 8 {
 		r = 1
@@ -52,8 +54,8 @@ func (a *Assembler) registerToRegister(encoder *registerToRegisterEncoder, regis
 		w = 1
 	}
 
-	if w != 0 || r != 0 || b != 0 || registerTo.MustHaveREX {
-		a.WriteBytes(opcode.REX(w, r, 0, b))
+	if w != 0 || r != 0 || b != 0 || x != 0 || registerTo.MustHaveREX {
+		a.WriteBytes(opcode.REX(w, r, x, b))
 	}
 
 	_, _ = a.Write(baseCode)

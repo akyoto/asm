@@ -76,7 +76,7 @@ func (a *Assembler) numberToRegister(encoder *numberToRegisterEncoder, registerN
 		b = 1
 	}
 
-	if w != 0 || b != 0 || x != 0 || registerTo.MustHaveREX {
+	if w != 0 || r != 0 || b != 0 || x != 0 || registerTo.MustHaveREX {
 		a.WriteBytes(opcode.REX(w, r, x, b))
 	}
 
