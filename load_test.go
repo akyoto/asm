@@ -83,7 +83,7 @@ func TestLoadRegister(t *testing.T) {
 
 	for _, pattern := range usagePatterns {
 		a := asm.New()
-		t.Logf("load %db %s, [%s+%d]", pattern.ByteCount, pattern.Destination, pattern.Source, pattern.Offset)
+		t.Logf("load %dB %s, [%s+%d]", pattern.ByteCount, pattern.Destination, pattern.Source, pattern.Offset)
 		a.LoadRegister(pattern.Destination, pattern.Source, pattern.Offset, pattern.ByteCount)
 		assert.DeepEqual(t, a.Bytes(), pattern.Code)
 	}

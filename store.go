@@ -8,20 +8,46 @@ import (
 
 // StoreNumber stores a number into the memory address included in the given register.
 func (a *Assembler) StoreNumber(registerNameTo string, offset byte, byteCount byte, number uint64) {
+	a.store(0xc7, 0xc6, registerNameTo, offset, byteCount, "")
+
+	// Number
+	switch byteCount {
+	case 8, 4:
+		a.WriteUint32(uint32(number))
+
+	case 2:
+		a.WriteUint16(uint16(number))
+
+	case 1:
+		a.WriteBytes(byte(number))
+	}
+}
+
+// StoreRegister stores the contents of a register into the memory address included in the given register.
+func (a *Assembler) StoreRegister(registerNameTo string, offset byte, byteCount byte, registerNameFrom string) {
+	a.store(0x89, 0x88, registerNameTo, offset, byteCount, registerNameFrom)
+}
+
+// store is the core function for memory store instructions.
+func (a *Assembler) store(baseCode byte, oneByteCode byte, registerNameTo string, offset byte, byteCount byte, registerNameFrom string) {
 	registerTo, exists := registers[registerNameTo]
 
 	if !exists {
 		log.Fatal("Unknown register name: " + registerNameTo)
 	}
 
-	baseCode := byte(0xc7)
+	registerFrom := registers[registerNameFrom]
+
+	if registerFrom != nil && registerFrom.MustHaveREX {
+		a.WriteBytes(0x40)
+	}
 
 	switch byteCount {
 	case 2:
 		a.WriteBytes(0x66)
 
 	case 1:
-		baseCode = 0xc6
+		baseCode = oneByteCode
 	}
 
 	// REX prefix
@@ -32,6 +58,10 @@ func (a *Assembler) StoreNumber(registerNameTo string, offset byte, byteCount by
 
 	if byteCount == 8 {
 		w = 1
+	}
+
+	if registerFrom != nil && registerFrom.BaseCodeOffset >= 8 {
+		r = 1
 	}
 
 	if registerTo.BaseCodeOffset >= 8 {
@@ -53,10 +83,16 @@ func (a *Assembler) StoreNumber(registerNameTo string, offset byte, byteCount by
 		hasOffset = true
 	}
 
+	reg := byte(0)
+
+	if registerFrom != nil {
+		reg = registerFrom.BaseCodeOffset % 8
+	}
+
 	if hasOffset {
-		a.WriteBytes(opcode.ModRM(0b01, 0, registerTo.BaseCodeOffset%8))
+		a.WriteBytes(opcode.ModRM(0b01, reg, registerTo.BaseCodeOffset%8))
 	} else {
-		a.WriteBytes(opcode.ModRM(0b00, 0, registerTo.BaseCodeOffset%8))
+		a.WriteBytes(opcode.ModRM(0b00, reg, registerTo.BaseCodeOffset%8))
 	}
 
 	// rsp and r12 always need an SIB byte
@@ -66,17 +102,5 @@ func (a *Assembler) StoreNumber(registerNameTo string, offset byte, byteCount by
 
 	if hasOffset {
 		a.WriteBytes(offset)
-	}
-
-	// Number
-	switch byteCount {
-	case 8, 4:
-		a.WriteUint32(uint32(number))
-
-	case 2:
-		a.WriteUint16(uint16(number))
-
-	case 1:
-		a.WriteBytes(byte(number))
 	}
 }
