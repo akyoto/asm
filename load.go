@@ -48,6 +48,13 @@ func (a *Assembler) LoadRegister(registerNameTo string, registerNameFrom string,
 		r = 1
 	}
 
+	// Using one of the new (r8-r15) registers as a destination with an old register source
+	// requires swapping r & b which is equal to adding 3 to the REX prefix.
+	if b == 1 && r == 0 {
+		r = 1
+		b = 0
+	}
+
 	if w != 0 || r != 0 || b != 0 || x != 0 || registerTo.MustHaveREX {
 		a.WriteBytes(opcode.REX(w, r, x, b))
 	}
@@ -59,7 +66,7 @@ func (a *Assembler) LoadRegister(registerNameTo string, registerNameFrom string,
 	hasOffset := offset != 0
 
 	// rbp and r13 always have an offset
-	if registerNameTo == "rbp" || registerNameTo == "r13" {
+	if registerNameFrom == "rbp" || registerNameFrom == "r13" {
 		hasOffset = true
 	}
 
@@ -70,12 +77,12 @@ func (a *Assembler) LoadRegister(registerNameTo string, registerNameFrom string,
 	}
 
 	// rsp always need an SIB byte
-	if registerNameTo == "rsp" || registerNameTo == "esp" || registerNameTo == "sp" || registerNameTo == "spl" {
+	if registerNameFrom == "rsp" || registerNameFrom == "esp" || registerNameFrom == "sp" || registerNameFrom == "spl" {
 		a.WriteBytes(opcode.SIB(0b00, 0b100, 0b100))
 	}
 
 	// r12 always need an SIB byte
-	if registerNameTo == "r12" || registerNameTo == "r12d" || registerNameTo == "r12w" || registerNameTo == "r12b" {
+	if registerNameFrom == "r12" || registerNameFrom == "r12d" || registerNameFrom == "r12w" || registerNameFrom == "r12b" {
 		a.WriteBytes(opcode.SIB(0b00, 0b100, 0b100))
 	}
 
