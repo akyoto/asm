@@ -42,13 +42,15 @@ You can build it like this:
 (mod << 6) | (reg << 3) | rm
 ```
 
+The SIB byte has the same format:
+
 | Name  | Size in bits |
 |-------|--------------|
 | Scale | 2            |
 | Index | 3            |
 | Base  | 3            |
 
-Similar to Mod/RM, you can build it like this:
+You can build it like this:
 
 ```go
 (scale << 6) | (index << 3) | base
