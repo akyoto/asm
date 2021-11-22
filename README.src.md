@@ -59,6 +59,8 @@ The `opcode` directory has a few helper functions to construct these components.
 
 ## Registers
 
+The following is a list of register names you can use. I decided to stick with the original names instead of r0-r7 for rax-rbp. I might still switch to r0-r7 for the future and enable the old names as synonyms.
+
 | 64 bit | 32 bit | 16 bit | 8 bit |
 |--------|--------|--------|-------|
 | rax    | eax    | ax     | al    |
