@@ -14,23 +14,22 @@ Hopefully this repository helps someone who is learning about x86 assembly and i
 
 There are a few [examples](https://github.com/akyoto/asm/tree/master/examples) to get an idea of the API I was aiming for.
 
-## x86 bytecode
+## x86-64 bytecode
 
-An x86 program consists of a list of instructions. All of these instructions are built with the following format:
+An x86-64 program consists of a list of instructions. All of these instructions are built with the following format:
 
-| Name                | Size in bytes | Required? |
-|---------------------|---------------|-----------|
-| Instruction prefix  | 1             |           |
-| Address size prefix | 1             |           |
-| Operand size prefix | 1             |           |
-| Segment override    | 1             |           |
-| OP code             | 1-2           | required  |
-| Mod/RM              | 1             |           |
-| SIB                 | 1             |           |
-| Displacement        | 1-4           |           |
-| Immediate           | 1-4           |           |
+| Name            | Size in bytes | Required? |
+|-----------------|---------------|-----------|
+| Legacy prefixes | 1-4           |           |
+| OP code         | 1-4           | required  |
+| Mod/RM          | 1             |           |
+| SIB             | 1             |           |
+| Displacement    | 1-8           |           |
+| Immediate       | 1-8           |           |
 
 Out of these only the actual OP code which decides the instruction to execute is required. The remaining components depend on what instruction and what kind of parameters you have.
+
+The maximum size for a single instruction is limited to 15 bytes.
 
 ### Mod/RM
 
@@ -40,7 +39,7 @@ The Mod/RM byte has the following format:
 |------|--------------|
 | Mod  | 2            |
 | Reg  | 3            |
-| R/M  | 3            |
+| RM   | 3            |
 
 ```go
 (mod << 6) | (reg << 3) | rm
