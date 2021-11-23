@@ -92,6 +92,8 @@ The following is a list of register names you can use. I decided to stick with t
 * https://www.systutorials.com/beginners-guide-x86-64-instruction-encoding/
 * https://blog.yossarian.net/2020/06/13/How-x86_64-addresses-memory
 * https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf
+* https://www.cs.cmu.edu/~fp/courses/15213-s07/resources.html
+* https://www.agner.org/optimize/optimizing_assembly.pdf
 * https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 
 [godoc-image]: https://godoc.org/github.com/akyoto/asm?status.svg
