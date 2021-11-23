@@ -84,6 +84,16 @@ The following is a list of register names you can use. I decided to stick with t
 | r14    | r14d   | r14w   | r14b  |
 | r15    | r15d   | r15w   | r15b  |
 
+## Resources
+
+* https://godbolt.org
+* https://www.felixcloutier.com/x86
+* https://wiki.osdev.org/X86-64_Instruction_Encoding
+* https://www.systutorials.com/beginners-guide-x86-64-instruction-encoding/
+* https://blog.yossarian.net/2020/06/13/How-x86_64-addresses-memory
+* https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf
+* https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
+
 [godoc-image]: https://godoc.org/github.com/akyoto/asm?status.svg
 [godoc-url]: https://godoc.org/github.com/akyoto/asm
 [report-image]: https://goreportcard.com/badge/github.com/akyoto/asm
