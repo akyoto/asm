@@ -1,4 +1,4 @@
-package sections
+package asm
 
 // Pointer stores a relative memory address reference (relative to the section)
 // that we can later turn into an absolute one.

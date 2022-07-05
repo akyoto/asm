@@ -6,7 +6,7 @@ import (
 
 // Print prints a message on the terminal.
 func (a *Assembler) Print(msg string) {
-	address := a.Strings.Add(msg)
+	address := a.AddData([]byte(msg))
 
 	a.MoveRegisterNumber(syscall.Registers[0], uint64(syscall.Write))
 	a.MoveRegisterNumber(syscall.Registers[1], 1)
@@ -29,7 +29,7 @@ func (a *Assembler) Exit(code int32) {
 
 // Open opens a file.
 func (a *Assembler) Open(fileName string) {
-	address := a.Strings.Add(fileName)
+	address := a.AddData([]byte(fileName))
 
 	a.MoveRegisterNumber(syscall.Registers[0], uint64(syscall.Open))
 	a.MoveRegisterNumber(syscall.Registers[1], 2)

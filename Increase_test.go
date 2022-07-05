@@ -76,7 +76,7 @@ func TestIncreaseRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("inc %s", pattern.Register)
 		a.IncreaseRegister(pattern.Register)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -149,6 +149,6 @@ func TestDecreaseRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("dec %s", pattern.Register)
 		a.DecreaseRegister(pattern.Register)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

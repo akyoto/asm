@@ -1,9 +1,5 @@
 package asm
 
-import (
-	"github.com/akyoto/asm/sections"
-)
-
 var (
 	moveRegisterNumber = numberToRegisterEncoder{
 		baseCode:            0xb8,
@@ -24,7 +20,7 @@ var (
 func (a *Assembler) MoveRegisterAddress(registerNameTo string, address uint32) {
 	addressPosition := a.MoveRegisterNumber(registerNameTo, uint64(address))
 
-	a.StringPointers = append(a.StringPointers, sections.Pointer{
+	a.pointers = append(a.pointers, Pointer{
 		Address:  address,
 		Position: addressPosition,
 	})

@@ -1,10 +1,5 @@
 package asm
 
-import (
-	"encoding/binary"
-	"math"
-)
-
 // Mnemonic        Condition tested      Description
 // ----------------------------------------------------------------------------
 // jo              OF = 1                overflow
@@ -23,6 +18,13 @@ import (
 // jge, jnl        SF xor OF = 0         greater or equal / not less
 // jle, jng        (SF xor OF) or ZF = 1 less or equal / not greater
 // jg, jnle        (SF xor OF) or ZF = 0 greater / not less nor equal
+
+type jump struct {
+	addressPosition Address
+	toLabel         string
+	shortCode       byte
+	nearCode        []byte
+}
 
 // Jump continues program flow at the new address.
 // The address is relative to the next instruction.
@@ -62,30 +64,13 @@ func (a *Assembler) JumpIfNotEqual(label string) {
 
 // jump implements program flow jumps.
 func (a *Assembler) jump(shortCode byte, nearCode []byte, label string) {
-	instructionPosition := a.Len()
-	pointerPosition := instructionPosition + 1
-	pointerSize := uint8(1)
-	absoluteAddress, exists := a.Labels[label]
+	a.jumps = append(a.jumps, jump{
+		addressPosition: a.Position() + uint32(len(nearCode)),
+		toLabel:         label,
+		shortCode:       shortCode,
+		nearCode:        nearCode,
+	})
 
-	if !exists {
-		// TODO: Support 32-bit jumps for unknown labels
-		pointer := jumpPointer{pointerPosition, pointerSize}
-		a.undefinedJumpLabels[label] = append(a.undefinedJumpLabels[label], pointer)
-		a.WriteBytes(shortCode)
-		a.WriteBytes(0)
-		return
-	}
-
-	offset := int32(absoluteAddress - (pointerPosition + uint32(pointerSize)))
-
-	// Near jump (32-bit)
-	if offset < math.MinInt8 || offset > math.MaxInt8 {
-		a.WriteBytes(nearCode...)
-		_ = binary.Write(a, binary.LittleEndian, offset)
-		return
-	}
-
-	// Short jump (8-bit)
-	a.WriteBytes(shortCode)
-	a.WriteBytes(byte(offset))
+	a.WriteBytes(nearCode...)
+	a.WriteBytes(0, 0, 0, 0)
 }

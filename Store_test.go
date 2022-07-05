@@ -152,7 +152,7 @@ func TestStoreNumber(t *testing.T) {
 		a := asm.New()
 		t.Logf("store %dB [%s+%d], %d", pattern.ByteCount, pattern.Register, pattern.Offset, pattern.Number)
 		a.StoreNumber(pattern.Register, pattern.Offset, pattern.ByteCount, uint64(pattern.Number))
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -234,6 +234,6 @@ func TestStoreRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("store %dB [%s+%d], %s", pattern.ByteCount, pattern.RegisterTo, pattern.Offset, pattern.RegisterFrom)
 		a.StoreRegister(pattern.RegisterTo, pattern.Offset, pattern.ByteCount, pattern.RegisterFrom)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

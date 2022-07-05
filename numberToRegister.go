@@ -118,7 +118,7 @@ func (a *Assembler) numberToRegister(encoder *numberToRegisterEncoder, registerN
 		bitSize = 32
 	}
 
-	numberPos := a.Len()
+	numberPos := a.Position()
 
 	// Number
 	switch bitSize {

@@ -78,6 +78,6 @@ func TestDivRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("idiv %s", pattern.Register)
 		a.DivRegister(pattern.Register)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

@@ -21,6 +21,6 @@ func TestSignExtendToDX(t *testing.T) {
 		a := asm.New()
 		t.Logf("cdq %s", pattern.Register)
 		a.SignExtendToDX(pattern.Register)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

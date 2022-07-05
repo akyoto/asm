@@ -83,7 +83,7 @@ func TestAddRegisterNumber(t *testing.T) {
 		a := asm.New()
 		t.Logf("add %s, %d", pattern.Register, pattern.Number)
 		a.AddRegisterNumber(pattern.Register, uint64(pattern.Number))
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -167,6 +167,6 @@ func TestAddRegisterRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("add %s, %s", pattern.Destination, pattern.Source)
 		a.AddRegisterRegister(pattern.Destination, pattern.Source)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

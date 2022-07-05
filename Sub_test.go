@@ -83,7 +83,7 @@ func TestSubRegisterNumber(t *testing.T) {
 		a := asm.New()
 		t.Logf("sub %s, %d", pattern.Register, pattern.Number)
 		a.SubRegisterNumber(pattern.Register, uint64(pattern.Number))
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -167,6 +167,6 @@ func TestSubRegisterRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("sub %s, %s", pattern.Destination, pattern.Source)
 		a.SubRegisterRegister(pattern.Destination, pattern.Source)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

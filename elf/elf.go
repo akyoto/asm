@@ -24,9 +24,9 @@ type ELF64 struct {
 
 // New creates a new 64-bit ELF binary.
 func New(a *asm.Assembler) *ELF64 {
-	instructions := a.Bytes()
-	strings := a.Strings
-	stringPointers := a.StringPointers
+	code := a.Code()
+	data := a.Data()
+	pointers := a.Pointers()
 
 	elf := &ELF64{
 		Header64: Header64{
@@ -44,8 +44,8 @@ func New(a *asm.Assembler) *ELF64 {
 		},
 	}
 
-	elf.AddProgram(instructions, ProgramTypeLOAD, ProgramFlagsExecutable)
-	elf.AddSection(strings.Bytes(), SectionTypePROGBITS, SectionFlagsAllocate)
+	elf.AddProgram(code, ProgramTypeLOAD, ProgramFlagsExecutable)
+	elf.AddSection(data, SectionTypePROGBITS, SectionFlagsAllocate)
 	// elf.AddSection(nil, SectionTypeNOBITS, SectionFlagsAllocate|SectionFlagsWritable)
 
 	// Header count
@@ -90,8 +90,8 @@ func New(a *asm.Assembler) *ELF64 {
 	}
 
 	// Add section offset to all string addresses
-	for _, pointer := range stringPointers {
-		oldAddressSlice := instructions[pointer.Position : pointer.Position+8]
+	for _, pointer := range pointers {
+		oldAddressSlice := code[pointer.Position : pointer.Position+4]
 		newAddress := uint32(baseAddress) + uint32(elf.Sections[0].Header.Offset) + pointer.Address
 		binary.LittleEndian.PutUint32(oldAddressSlice, newAddress)
 	}

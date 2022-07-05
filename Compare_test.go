@@ -128,7 +128,7 @@ func TestCompareRegisterNumber(t *testing.T) {
 		a := asm.New()
 		t.Logf("cmp %s, %d", pattern.Register, pattern.Number)
 		a.CompareRegisterNumber(pattern.Register, uint64(pattern.Number))
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -202,6 +202,6 @@ func TestCompareRegisterRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("cmp %s, %s", pattern.RegisterA, pattern.RegisterB)
 		a.CompareRegisterRegister(pattern.RegisterA, pattern.RegisterB)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

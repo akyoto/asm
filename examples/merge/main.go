@@ -11,7 +11,7 @@ func main() {
 	// Specify program code
 	a := asm.New()
 	a.Call("hello")
-	a.Call("niceday")
+	a.Call("nicemerge")
 	a.Call("exit")
 	a.AddLabel("exit")
 	a.Exit(0)
@@ -22,16 +22,23 @@ func main() {
 	b.Return()
 
 	c := asm.New()
-	c.AddLabel("niceday")
-	c.Println("Nice day, isn't it?")
+	c.AddLabel("nicemerge")
+	c.Println("Nice merge, isn't it?")
 	c.Return()
 
 	// Merge function codes
 	a.Merge(b)
 	a.Merge(c)
 
-	// Compile and save to file
-	err := elf.New(a).WriteToFile("program")
+	// Compile
+	err := a.Compile()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Save to file
+	err = elf.New(a).WriteToFile("program")
 
 	if err != nil {
 		log.Fatal(err)

@@ -50,7 +50,7 @@ func TestPushRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("push %s", pattern.Register)
 		a.PushRegister(pattern.Register)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -97,6 +97,6 @@ func TestPopRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("pop %s", pattern.Register)
 		a.PopRegister(pattern.Register)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

@@ -12,9 +12,9 @@ func TestHelloWorld(t *testing.T) {
 	a.Println("Hello World")
 	a.Exit(0)
 
-	assert.Nil(t, a.Verify())
-	assert.NotNil(t, a.Bytes())
-	assert.Equal(t, a.Strings.Count(), 1)
+	assert.Nil(t, a.Compile())
+	assert.True(t, len(a.Code()) > 0)
+	assert.True(t, len(a.Data()) > 0)
 }
 
 func TestProcedures(t *testing.T) {
@@ -34,15 +34,14 @@ func TestProcedures(t *testing.T) {
 	a.AddLabel("exit")
 	a.Exit(0)
 
-	assert.Nil(t, a.Verify())
-	assert.NotNil(t, a.Bytes())
-	assert.Equal(t, a.Strings.Count(), 2)
-	assert.Equal(t, len(a.Labels), 3)
+	assert.Nil(t, a.Compile())
+	assert.True(t, len(a.Code()) > 0)
+	assert.True(t, len(a.Data()) > 0)
 }
 
 func TestExit(t *testing.T) {
 	a := asm.New()
 	a.Exit(0)
-	assert.Nil(t, a.Verify())
-	assert.DeepEqual(t, a.Bytes(), []byte{0xb8, 0x3c, 0x00, 0x00, 0x00, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x05})
+	assert.Nil(t, a.Compile())
+	assert.DeepEqual(t, a.Code(), []byte{0xb8, 0x3c, 0x00, 0x00, 0x00, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x05})
 }

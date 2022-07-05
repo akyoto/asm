@@ -8,8 +8,8 @@ steps:
   - go version
   - go get ./...
   - go build ./...
-  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.43.0
-  - golangci-lint run --enable goconst --enable gocritic --enable misspell --enable prealloc --enable unconvert --enable unparam --enable gochecknoinits
+  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.46.2
+  - golangci-lint run
   - go test -v -race -coverpkg=./... -coverprofile=coverage.txt
 
 - name: coverage

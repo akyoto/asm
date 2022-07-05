@@ -91,7 +91,7 @@ func TestMoveRegisterNumber(t *testing.T) {
 		a.EnableOptimizer = false
 		t.Logf("mov %s, %d", pattern.Register, pattern.Number)
 		a.MoveRegisterNumber(pattern.Register, uint64(pattern.Number))
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -129,7 +129,7 @@ func TestMoveRegisterNumberOptimized(t *testing.T) {
 		a := asm.New()
 		t.Logf("mov %s, %d", pattern.Register, pattern.Number)
 		a.MoveRegisterNumber(pattern.Register, uint64(pattern.Number))
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -209,6 +209,6 @@ func TestMoveRegisterRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("mov %s, %s", pattern.Destination, pattern.Source)
 		a.MoveRegisterRegister(pattern.Destination, pattern.Source)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }

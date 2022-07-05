@@ -26,8 +26,15 @@ func main() {
 	a.AddLabel("exit")
 	a.Exit(0)
 
-	// Compile and save to file
-	err := elf.New(a).WriteToFile("program")
+	// Compile
+	err := a.Compile()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Save to file
+	err = elf.New(a).WriteToFile("program")
 
 	if err != nil {
 		log.Fatal(err)

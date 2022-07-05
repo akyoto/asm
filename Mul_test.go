@@ -67,7 +67,7 @@ func TestMulRegisterNumber(t *testing.T) {
 		a := asm.New()
 		t.Logf("imul %s, %d", pattern.Register, pattern.Number)
 		a.MulRegisterNumber(pattern.Register, uint64(pattern.Number))
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
 
@@ -135,6 +135,6 @@ func TestMulRegisterRegister(t *testing.T) {
 		a := asm.New()
 		t.Logf("imul %s, %s", pattern.Destination, pattern.Source)
 		a.MulRegisterRegister(pattern.Destination, pattern.Source)
-		assert.DeepEqual(t, a.Bytes(), pattern.Code)
+		assert.DeepEqual(t, a.Code(), pattern.Code)
 	}
 }
